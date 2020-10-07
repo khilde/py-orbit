@@ -466,7 +466,56 @@ extern "C"
         Py_INCREF(Py_None);
         return Py_None;
     }
-
+    
+    //Custom Dipole Kick
+    static PyObject* wrap_dipoleGeneralKick(PyObject *self, PyObject *args)
+    {
+        PyObject* pyBunch;
+        double effLength;
+        double strength;
+        double fieldDirection;
+        if(!PyArg_ParseTuple(	args, "Oddd:dipoleGeneralKick",
+                             &pyBunch, &effLength, &strength,&fieldDirection))
+        {
+            error("teapotbase - dipoleGeneralKick - cannot parse arguments!");
+        }
+        Bunch* cpp_bunch = (Bunch*) ((pyORBIT_Object *) pyBunch)->cpp_obj;
+        teapot_base::dipoleGeneralKick(cpp_bunch, effLength, strength,fieldDirection);
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+    //Custom Dipole kick with field in X direction
+    static PyObject* wrap_dipoleXKick(PyObject *self, PyObject *args)
+    {
+        PyObject* pyBunch;
+        double effLength;
+        double strength;
+        if(!PyArg_ParseTuple(	args, "Odd:dipoleXKick",
+                             &pyBunch, &effLength, &strength))
+        {
+            error("teapotbase - dipoleXKick - cannot parse arguments!");
+        }
+        Bunch* cpp_bunch = (Bunch*) ((pyORBIT_Object *) pyBunch)->cpp_obj;
+        teapot_base::dipoleXKick(cpp_bunch, effLength, strength);
+        Py_INCREF(Py_None);
+        return Py_None;
+    }    
+    //Custom Dipole kick with field in Y direction
+    static PyObject* wrap_dipoleYKick(PyObject *self, PyObject *args)
+    {
+        PyObject* pyBunch;
+        double effLength;
+        double strength;
+        if(!PyArg_ParseTuple(	args, "Odd:dipoleYKick",
+                             &pyBunch, &effLength, &strength))
+        {
+            error("teapotbase - dipoleXKick - cannot parse arguments!");
+        }
+        Bunch* cpp_bunch = (Bunch*) ((pyORBIT_Object *) pyBunch)->cpp_obj;
+        teapot_base::dipoleYKick(cpp_bunch, effLength, strength);
+        Py_INCREF(Py_None);
+        return Py_None;
+    }        
     static PyMethodDef teapotbaseMethods[] =
     {
 			{"rotatexy",         wrap_rotatexy,       METH_VARARGS, "Rotates bunch around z axis "},
@@ -493,6 +542,9 @@ extern "C"
 			{"soln",             wrap_soln,           METH_VARARGS, "Integration through a solenoid "},
 			{"wedgebendCF",      wrap_wedgebendCF,    METH_VARARGS, "Straight bends particles through wedge for Combined Function non-SBEND "},
 			{"RingRF",           wrap_RingRF,         METH_VARARGS, "Tracking particles through a simple ring RF cavity."},
+			{"dipoleGeneralKick",       wrap_dipoleGeneralKick,          METH_VARARGS, "Custom dipole kick "},
+			{"dipoleXKick",       wrap_dipoleXKick,          METH_VARARGS, "Custom dipole kick with field in X direction"},
+			{"dipoleYKick",       wrap_dipoleYKick,          METH_VARARGS, "Custom dipole kick with field in Y direction"},
 			{ NULL, NULL }
     };
 

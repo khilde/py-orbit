@@ -75,6 +75,10 @@ namespace teapot_base
                      int nsteps, int useCharge);
 
     void RingRF(Bunch* bunch, double ring_length, int harmonic_numb, double voltage, double phase_s, int useCharge);
+    
+    void dipoleGeneralKick(Bunch* bunch, double effLength, double strength,double fieldDirection);
+    void dipoleXKick(Bunch* bunch, double effLength, double strength);
+    void dipoleYKick(Bunch* bunch, double effLength, double strength);
 }
 
 #endif  //TEAPOT_BASE_H

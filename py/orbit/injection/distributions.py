@@ -149,7 +149,7 @@ class SNSESpreadDist():
 	distribution and a gaussian energy distribution, and then adding sinusoidal energy spread
 	and random centroid jitter
 	"""
-	def __init__(self, lattlength, zmin, zmax, tailfraction, sp, emean, esigma, etrunc, emin, emax, ecparams, esparams):
+	def __init__(self, lattlength, zmin, zmax, tailfraction, sp, emean, esigma, etrunc, emin, emax, ecparams, esparams,seed=-1):
 		self.name = "JohoLongitudinal"
 		self.lattlength = lattlength
 		self.zmin = zmin
@@ -164,6 +164,9 @@ class SNSESpreadDist():
 		self.emax = emax
 		self.ecparams = ecparams
 		self.esparams = esparams
+		self.seed=seed
+		if self.seed >0:
+			random.seed(self.seed)
 	
 	
 	def getCoordinates(self):

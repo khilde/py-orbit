@@ -37,6 +37,9 @@ class JohoTransverse:
 		self.orderinv = 1./self.order
 		self.emitrms = 0.5 * self.emitlim/(1. + self.order)
 
+	def setSeed(self, seed):
+		random.seed(seed)
+		
 	def getCoordinates(self):
 	
 		s1 = random.random()

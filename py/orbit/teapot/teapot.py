@@ -27,7 +27,10 @@ from aperture import Aperture
 # monitor
 from bunch import BunchTwissAnalysis
 
-
+debugPrint=False
+def printDebug(m1,m2="",m3="",m4="",m5="",m6="",m7="",m8="") :
+	if debugPrint==True:
+		print m1,m2,m3,m4,m5,m6,m7,m8
 """
 Drift
 Bend
@@ -68,6 +71,9 @@ class TEAPOT_Lattice(AccLattice):
 		# make TEAPOT lattice elements by using TEAPOT
 		# element factory
 		for madElem in accMADElements:
+			#print madElem.getParameters()
+			printDebug("in readMaD")
+			printDebug(madElem.getParameters())
 			elems = _teapotFactory.getElements(madElem)
 			for elem in elems:
 				self.addNode(elem)
@@ -168,6 +174,9 @@ class TEAPOT_Ring(AccLattice):
 		# make TEAPOT lattice elements by using TEAPOT
 		# element factory
 		for madElem in accMADElements:
+			#print madElem.getParameters()
+			#printDebug("in readMaD")
+			printDebug(madElem.getName(),madElem.getParameters())			
 			elems = _teapotFactory.getElements(madElem)
 			for elem in elems:
 				self.addNode(elem)
@@ -203,7 +212,14 @@ class TEAPOT_Ring(AccLattice):
 		for node in self.getNodes():
 			bunchwrapper = BunchWrapTEAPOT("Bunch Wrap")
 			bunchwrapper.getParamsDict()["ring_length"] = self.getLength()
-			node.addChildNode(bunchwrapper, AccNode.BODY)
+			if (node.getName().strip()=="DH_A11" or node.getName().strip()=="DH_A12") :
+				node.addChildNode(bunchwrapper, AccNode.ENTRANCE)
+				#if (node.getName().strip()=="DH_A11"):
+				#	node.setnParts(43)
+				#if (node.getName().strip()=="DH_A12"):
+				#	node.setnParts(49)					
+			else :
+				node.addChildNode(bunchwrapper, AccNode.BODY)
 			
 	def initialize(self):
 		AccLattice.initialize(self)
@@ -396,7 +412,7 @@ class _teapotFactory:
 				hkick = params["hkick"]
 			vkick = 0.
 			if(params.has_key("vkick")):
-				hkick = params["vkick"]
+				vkick = params["vkick"]
 			elem.addParam("kx",hkick)
 			elem.addParam("ky",vkick)
 		# ===========HKicker element ======================
@@ -413,7 +429,7 @@ class _teapotFactory:
 			elem = KickTEAPOT(madElem.getName())
 			vkick = 0.
 			if(params.has_key("vkick")):
-				hkick = params["vkick"]
+				vkick = params["vkick"]
 			elem.addParam("ky",vkick)
 		# ===========RF Cavity element ======================
 		if(madElem.getType().lower() == "rfcavity"):

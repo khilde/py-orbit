@@ -1539,5 +1539,136 @@ void RingRF(Bunch* bunch, double ring_length, int harmonic_numb,
         arr[i][5] += coeff * deltaV;
     }
 }
+///////////////////////////////////////////////////////////////////////////
+// NAME
+//   dipoleKick
+//
+// DESCRIPTION
+//   Custom dipole kick
+//
+// PARAMETERS
+//   bunch  = reference to the macro-particle bunch
+//   effLength = the effective Length of the dipole
+//   strength = the strength of the magnetic field in Tesla's
+//   fieldDirection= the direction of the magnetic field. Positive means X field, negative means Y field
+//
+// RETURNS
+//   Nothing
+//
+///////////////////////////////////////////////////////////////////////////
+
+void dipoleGeneralKick(Bunch* bunch, double effLength, double strength,double fieldDirection)
+{
+    bool debug=false;
+    double charge = bunch->getCharge();
+    double rigidity;
+    double theta;
+    double cosFD=cos(fieldDirection);
+    double sinFD=sin(fieldDirection);
+    
+    
+    SyncPart* syncPart = bunch->getSyncPart();
+    rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
+    theta=strength*effLength/rigidity;
+    
+    double dp_p_coeff = 1.0 / (syncPart->getMomentum() * syncPart->getBeta());
+    double dp_p;
+    if (debug) {
+    	std::cout <<"syncPart->getMomentum()= "<<syncPart->getMomentum()<<std::endl;
+    	std::cout <<"rigidity= "<<rigidity<<std::endl; 
+    	std::cout <<"theta= "<<theta<<std::endl; 
+    	std::cout <<"charge= "<<charge<<std::endl; 
+    	
+    }
+    //coordinate array [part. index][x,xp,y,yp,z,dE]
+    double** arr = bunch->coordArr();
+
+    for(int i = 0; i < bunch->getSize(); i++)
+    {
+    	dp_p = arr[i][5] * dp_p_coeff;
+	if (debug) {
+	    std::cout <<"thetaModded= "<<theta/(1+dp_p)<<std::endl;
+	    std::cout <<"dp_p= "<<dp_p<<std::endl;
+	}    	
+    	
+    	arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
+    	arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);
+    	
+    }
+}
+void dipoleXKick(Bunch* bunch, double effLength, double strength)
+{
+    bool debug=false;
+    double charge = bunch->getCharge();
+    double rigidity;
+    double theta;
+
+    
+    
+    SyncPart* syncPart = bunch->getSyncPart();
+    rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
+    theta=strength*effLength/rigidity;
+    
+    double dp_p_coeff = 1.0 / (syncPart->getMomentum() * syncPart->getBeta());
+    double dp_p;
+    if (debug) {
+    	std::cout <<"syncPart->getMomentum()= "<<syncPart->getMomentum()<<std::endl;
+    	std::cout <<"rigidity= "<<rigidity<<std::endl; 
+    	std::cout <<"theta= "<<theta<<std::endl; 
+    	std::cout <<"charge= "<<charge<<std::endl; 
+    	
+    }
+    //coordinate array [part. index][x,xp,y,yp,z,dE]
+    double** arr = bunch->coordArr();
+
+    for(int i = 0; i < bunch->getSize(); i++)
+    {
+    	dp_p = arr[i][5] * dp_p_coeff;
+	if (debug) {
+	    std::cout <<"thetaModded= "<<theta/(1+dp_p)<<std::endl;
+	    std::cout <<"dp_p= "<<dp_p<<std::endl;
+	}    	
+    	
+    	arr[i][3]  = arr[i][3]+theta/(1+dp_p);
+    	
+    }
+}
+void dipoleYKick(Bunch* bunch, double effLength, double strength)
+{
+    bool debug=false;
+    double charge = bunch->getCharge();
+    double rigidity;
+    double theta;
+
+    
+    
+    SyncPart* syncPart = bunch->getSyncPart();
+    rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
+    theta=strength*effLength/rigidity;
+    
+    double dp_p_coeff = 1.0 / (syncPart->getMomentum() * syncPart->getBeta());
+    double dp_p;
+    if (debug) {
+    	std::cout <<"syncPart->getMomentum()= "<<syncPart->getMomentum()<<std::endl;
+    	std::cout <<"rigidity= "<<rigidity<<std::endl; 
+    	std::cout <<"theta= "<<theta<<std::endl; 
+    	std::cout <<"charge= "<<charge<<std::endl; 
+    	
+    }
+    //coordinate array [part. index][x,xp,y,yp,z,dE]
+    double** arr = bunch->coordArr();
+
+    for(int i = 0; i < bunch->getSize(); i++)
+    {
+    	dp_p = arr[i][5] * dp_p_coeff;
+	if (debug) {
+	    std::cout <<"thetaModded= "<<theta/(1+dp_p)<<std::endl;
+	    std::cout <<"dp_p= "<<dp_p<<std::endl;
+	}    	
+    	
+    	arr[i][1]  = arr[i][1]-theta/(1+dp_p);
+    	
+    }
+}
 
 }  //end of namespace teapot_base
