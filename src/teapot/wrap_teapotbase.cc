@@ -515,7 +515,31 @@ extern "C"
         teapot_base::dipoleYKick(cpp_bunch, effLength, strength);
         Py_INCREF(Py_None);
         return Py_None;
-    }        
+    }   
+    //Custom Dipole Kick with stripping
+    static PyObject* wrap_dipoleGeneralKickStrip(PyObject *self, PyObject *args)
+    {
+        PyObject* pyBunch;
+        PyObject* pyBunch2;
+        PyObject* pyFunction;
+        PyObject* pyFunction2;
+        double effLength;
+        double strength;
+        double fieldDirection;
+
+        if(!PyArg_ParseTuple(	args, "OOOOddd:dipoleGeneralKickStrip",
+                             &pyBunch, &pyBunch2, &pyFunction,pyFunction2, &effLength, &strength,&fieldDirection))
+        {
+            error("teapotbase - dipoleGeneralKickStrip - cannot parse arguments!");
+        }
+        Bunch* cpp_bunch = (Bunch*) ((pyORBIT_Object *) pyBunch)->cpp_obj;
+        Bunch* cpp_bunch2 = (Bunch*) ((pyORBIT_Object *) pyBunch2)->cpp_obj;
+        OrbitUtils::Function* cpp_Function = (OrbitUtils::Function*) ((pyORBIT_Object *) cpp_Function)->cpp_obj;
+        OrbitUtils::Function* cpp_Function2 = (OrbitUtils::Function*) ((pyORBIT_Object *) cpp_Function2)->cpp_obj;        
+        teapot_base::dipoleGeneralKickStrip(cpp_bunch,cpp_bunch2,cpp_Function,cpp_Function2, effLength, strength,fieldDirection);
+        Py_INCREF(Py_None);
+        return Py_None;
+    }    
     static PyMethodDef teapotbaseMethods[] =
     {
 			{"rotatexy",         wrap_rotatexy,       METH_VARARGS, "Rotates bunch around z axis "},
@@ -545,6 +569,7 @@ extern "C"
 			{"dipoleGeneralKick",       wrap_dipoleGeneralKick,          METH_VARARGS, "Custom dipole kick "},
 			{"dipoleXKick",       wrap_dipoleXKick,          METH_VARARGS, "Custom dipole kick with field in X direction"},
 			{"dipoleYKick",       wrap_dipoleYKick,          METH_VARARGS, "Custom dipole kick with field in Y direction"},
+			{"dipoleGeneralKickStrip",       wrap_dipoleGeneralKickStrip,          METH_VARARGS, "Custom dipole kick with stripping"},
 			{ NULL, NULL }
     };
 

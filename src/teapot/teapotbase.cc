@@ -36,6 +36,10 @@
 #include "Bunch.hh"
 #include "SyncPart.hh"
 
+#include "OU_Function.hh"
+#include "Random.hh"
+//#include "StripperFunctions.hh"
+
 #include <complex>
 
 namespace teapot_base
@@ -1550,7 +1554,7 @@ void RingRF(Bunch* bunch, double ring_length, int harmonic_numb,
 //   bunch  = reference to the macro-particle bunch
 //   effLength = the effective Length of the dipole
 //   strength = the strength of the magnetic field in Tesla's
-//   fieldDirection= the direction of the magnetic field. Positive means X field, negative means Y field
+//   fieldDirection= the direction of the magnetic field in radians. 0 is positive x axis.
 //
 // RETURNS
 //   Nothing
@@ -1595,6 +1599,110 @@ void dipoleGeneralKick(Bunch* bunch, double effLength, double strength,double fi
     	arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);
     	
     }
+}
+
+///////////////////////////////////////////////////////////////////////////
+// NAME
+//   dipoleGeneralKickStrip
+//
+// DESCRIPTION
+//   Custom dipole kick with stripping
+//
+// PARAMETERS
+//   bunch  = reference to the macro-particle bunch
+//   failedToStripBunch = reference to the macro-particle bunch that fails to get stripped
+//   survivalProbFunction = function that gives the probability a particle survived after travels distance x
+//   inverseFunction = function that is the inverse of the pdf of the particle decay
+//   effLength = the effective Length of the dipole
+//   strength = the strength of the magnetic field in Tesla's
+//   fieldDirection= the direction of the magnetic field in radians. 0 is positive x axis.
+//
+// RETURNS
+//   Nothing
+//
+///////////////////////////////////////////////////////////////////////////
+
+void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils::Function* survivalProbFunction, OrbitUtils::Function* inverseFunction, double effLength, double strength,double fieldDirection)
+{
+    bool debug=false;
+    
+    long idum = (unsigned)time(0);
+    idum = -idum;    
+    double random1 = 0;
+    
+    double charge = bunch->getCharge();
+    double rigidity;
+    double theta;
+    double tempLength;
+    double cosFD=cos(fieldDirection);
+    double sinFD=sin(fieldDirection);
+    std::cout << "survivalProbFunction->getY(effLength)" <<std::endl;
+    std::cout << survivalProbFunction->getY(effLength) <<std::endl;
+    SyncPart* syncPart = bunch->getSyncPart();
+    if (charge!=0) {
+    	    rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
+    }
+    
+    
+    double dp_p_coeff = 1.0 / (syncPart->getMomentum() * syncPart->getBeta());
+    double dp_p;
+    if (debug) {
+    	std::cout <<"syncPart->getMomentum()= "<<syncPart->getMomentum()<<std::endl;
+    	std::cout <<"rigidity= "<<rigidity<<std::endl; 
+    	std::cout <<"theta= "<<theta<<std::endl; 
+    	std::cout <<"charge= "<<charge<<std::endl; 
+    	
+    }
+    //coordinate array [part. index][x,xp,y,yp,z,dE]
+    double** arr = bunch->coordArr();
+
+    for(int i = 0; i < bunch->getSize(); i++)
+    {
+    	random1 = Random::ran1(idum);
+    	//first check if it gets stripped
+    	if (random1>survivalProbFunction->getY(effLength)) {
+    		//it doesnt get stripped
+    		if (charge!=0) {
+    			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
+    			theta=strength*effLength/rigidity;
+    			dp_p = arr[i][5] * dp_p_coeff;
+			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
+			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);    			
+    		} else {
+    			//its neutral nothing to do	
+    		}
+		failedToStripBunch->addParticle(arr[i][0], arr[i][1], arr[i][2], arr[i][3], arr[i][4], arr[i][5]);
+		bunch->deleteParticleFast(i);    	
+	} else {
+		//it will be stripped
+		random1 = Random::ran1(idum);
+		//how far it travels before being stripped
+		tempLength=inverseFunction->getY(random1);
+		//do first part of path
+		if (charge!=0) {
+			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
+			theta=strength*tempLength/rigidity;
+			dp_p = arr[i][5] * dp_p_coeff;
+			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
+			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);    			
+		} else {
+			//do nothing its neutral	
+		}
+		//do second part of path
+		if ((charge-1)!=0) {
+			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/(charge-1);
+			theta=strength*(effLength-tempLength)/rigidity;
+			dp_p = arr[i][5] * dp_p_coeff;
+			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
+			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p); 			
+		} else {
+			//do nothing its neutral	
+		}		
+	}
+    	
+    }
+    bunch->compress();
+    bunch->setCharge(charge-1);
 }
 void dipoleXKick(Bunch* bunch, double effLength, double strength)
 {

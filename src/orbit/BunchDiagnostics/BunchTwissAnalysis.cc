@@ -373,6 +373,7 @@ double BunchTwissAnalysis::getEmittance(int ic)
 {	
 	// for x and y the pure betatron emittance is computed (subtracting the dispersive contribution)
 	if(ic < 0 || ic > 2 ) return 0.;
+	bool debug=true;
 	double x2_avg = fabs(this->getCorrelation(2*ic,2*ic));
 	double xp2_avg = fabs(this->getCorrelation(2*ic+1,2*ic+1));
 	double x_xp_avg = this->getCorrelation(2*ic,2*ic+1);
@@ -385,7 +386,17 @@ double BunchTwissAnalysis::getEmittance(int ic)
 	} else {
 		emitt_rms = sqrt(fabs( (x2_avg - x_dE_avg*x_dE_avg/dE2_avg) * (xp2_avg - xp_dE_avg*xp_dE_avg/dE2_avg) 
 						- (x_xp_avg - x_dE_avg*xp_dE_avg/dE2_avg) * (x_xp_avg - x_dE_avg*xp_dE_avg/dE2_avg) ));
-	}						
+	}		
+	if (debug==true) {
+		std::cout << "x2_avg= " << x2_avg<<std::endl;	
+		std::cout << "xp2_avg= " << xp2_avg<<std::endl;
+		std::cout << "x_xp_avg= " << x_xp_avg<<std::endl;
+		std::cout << "x_dE_avg= " << x_dE_avg<<std::endl;
+		std::cout << "xp_dE_avg= " << xp_dE_avg<<std::endl;
+		std::cout << "dE2_avg= " << dE2_avg<<std::endl;
+		std::cout << "emitt_rms withoutDispersion= " << sqrt(fabs(x2_avg*xp2_avg - x_xp_avg*x_xp_avg))<<std::endl;
+		std::cout << "emitt_rms returned= " << emitt_rms<<std::endl;
+	}
 	return emitt_rms;
 }
 

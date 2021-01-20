@@ -24,6 +24,7 @@
 #define TEAPOT_BASE_H
 
 #include "Bunch.hh"
+#include "OU_Function.hh"
 
 namespace teapot_base
 {
@@ -79,6 +80,8 @@ namespace teapot_base
     void dipoleGeneralKick(Bunch* bunch, double effLength, double strength,double fieldDirection);
     void dipoleXKick(Bunch* bunch, double effLength, double strength);
     void dipoleYKick(Bunch* bunch, double effLength, double strength);
+    void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils::Function* survivalProbFunction, OrbitUtils::Function* inverseFunction, double effLength, double strength,double fieldDirection);
+    
 }
 
 #endif  //TEAPOT_BASE_H

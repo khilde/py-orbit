@@ -20,6 +20,8 @@ from dipole_kick import GeneralDipole
 from dipole_kick import XDipole
 from dipole_kick import YDipole
 
+from dipole_kick_strip import GeneralDipoleStrip
+
 from teapot import TPB
 
 from teapot_matrix_lattice import TEAPOT_MATRIX_Lattice
