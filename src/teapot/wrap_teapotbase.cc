@@ -528,14 +528,14 @@ extern "C"
         double fieldDirection;
 
         if(!PyArg_ParseTuple(	args, "OOOOddd:dipoleGeneralKickStrip",
-                             &pyBunch, &pyBunch2, &pyFunction,pyFunction2, &effLength, &strength,&fieldDirection))
+                             &pyBunch, &pyBunch2, &pyFunction, &pyFunction2, &effLength, &strength,&fieldDirection))
         {
             error("teapotbase - dipoleGeneralKickStrip - cannot parse arguments!");
         }
         Bunch* cpp_bunch = (Bunch*) ((pyORBIT_Object *) pyBunch)->cpp_obj;
         Bunch* cpp_bunch2 = (Bunch*) ((pyORBIT_Object *) pyBunch2)->cpp_obj;
-        OrbitUtils::Function* cpp_Function = (OrbitUtils::Function*) ((pyORBIT_Object *) cpp_Function)->cpp_obj;
-        OrbitUtils::Function* cpp_Function2 = (OrbitUtils::Function*) ((pyORBIT_Object *) cpp_Function2)->cpp_obj;        
+        OrbitUtils::Function* cpp_Function = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction)->cpp_obj;
+        OrbitUtils::Function* cpp_Function2 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction2)->cpp_obj;        
         teapot_base::dipoleGeneralKickStrip(cpp_bunch,cpp_bunch2,cpp_Function,cpp_Function2, effLength, strength,fieldDirection);
         Py_INCREF(Py_None);
         return Py_None;

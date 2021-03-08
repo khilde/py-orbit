@@ -24,7 +24,7 @@ from bunch import BunchTwissAnalysis
 
 from orbit.teapot.teapot import BaseTEAPOT
 
-from orbit.utils import Function
+from orbit_utils import Function
 
 debugPrint=True
 def printDebug(m1,m2="",m3="",m4="",m5="",m6="",m7="",m8="") :
@@ -98,9 +98,11 @@ class GeneralDipoleStrip(BaseTEAPOT):
 		secondChicaneFail=paramsDict["secondChicaneFail"]
 		#charge <0 means first dipole
 		#charge==0 means second dipole
-		if bunch.getCharge() <0:
+		if bunch.charge() <0:
+			print "hi1"
 			TPB.dipoleGeneralKickStrip(bunch,firstChicaneFail,self.function1,self.function2, length, strength,fieldDirection)
-		elif bunch.getCharge()==0:
+			print "hi2"
+		elif bunch.charge()==0:
 			TPB.dipoleGeneralKickStrip(bunch,secondChicaneFail,self.function1,self.function2, length, strength,fieldDirection)
 
 	

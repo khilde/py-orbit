@@ -42,6 +42,9 @@
 
 #include <complex>
 
+#include <iostream>
+#include <fstream>
+
 namespace teapot_base
 {
     static double* factorial = NULL;
@@ -1625,24 +1628,33 @@ void dipoleGeneralKick(Bunch* bunch, double effLength, double strength,double fi
 void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils::Function* survivalProbFunction, OrbitUtils::Function* inverseFunction, double effLength, double strength,double fieldDirection)
 {
     bool debug=false;
-    
+    bool debug2=false;
+    bool debug3=false;
+    bool debug4=false;
+    bool debug5=false;
+    bool debugPrintFile=true;
+
     long idum = (unsigned)time(0);
+    if (debug2) {
+    	    std::cout <<"idum= "<<idum<<std::endl; 
+    	    std::cout <<"time(0)= "<<time(0)<<std::endl; 
+    }
     idum = -idum;    
     double random1 = 0;
     
     double charge = bunch->getCharge();
-    double rigidity;
+    double rigidity=0;
     double theta;
     double tempLength;
     double cosFD=cos(fieldDirection);
     double sinFD=sin(fieldDirection);
-    std::cout << "survivalProbFunction->getY(effLength)" <<std::endl;
-    std::cout << survivalProbFunction->getY(effLength) <<std::endl;
+
+  
     SyncPart* syncPart = bunch->getSyncPart();
     if (charge!=0) {
     	    rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
     }
-    
+   
     
     double dp_p_coeff = 1.0 / (syncPart->getMomentum() * syncPart->getBeta());
     double dp_p;
@@ -1655,17 +1667,31 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils:
     }
     //coordinate array [part. index][x,xp,y,yp,z,dE]
     double** arr = bunch->coordArr();
-
+    if (debugPrintFile) {
+    	    //erase current file
+    	    ofstream fileOut;
+    	    if (charge==-1) {
+		    fileOut.open("firstChicaneLength.txt");  
+		    fileOut.close();
+		    fileOut.open("randomFirst.txt");  
+		    fileOut.close();		    
+	    } else if (charge==0) {
+	    	    fileOut.open("secondChicaneLength.txt");  
+	    	    fileOut.close();   
+	    }
+    }
+    int countBig=0;
+    int countBig2=0;
     for(int i = 0; i < bunch->getSize(); i++)
     {
     	random1 = Random::ran1(idum);
     	//first check if it gets stripped
-    	if (random1>survivalProbFunction->getY(effLength)) {
+    	if (random1<survivalProbFunction->getY(effLength)) {
     		//it doesnt get stripped
     		if (charge!=0) {
     			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
-    			theta=strength*effLength/rigidity;
-    			dp_p = arr[i][5] * dp_p_coeff;
+    			theta=strength*effLength/rigidity;			
+    			dp_p = arr[i][5] * dp_p_coeff;      			
 			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
 			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);    			
     		} else {
@@ -1678,19 +1704,58 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils:
 		random1 = Random::ran1(idum);
 		//how far it travels before being stripped
 		tempLength=inverseFunction->getY(random1);
+		if (debug5) {
+			std::cout <<"tempLength= "<<tempLength<<std::endl;
+			std::cout <<"random1= "<<random1<<std::endl;
+		}
+		//std::cout <<"tempLength= "<<tempLength<<std::endl;
 		//do first part of path
 		if (charge!=0) {
 			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
 			theta=strength*tempLength/rigidity;
 			dp_p = arr[i][5] * dp_p_coeff;
+			if (debug4) {
+				if (theta/(1+dp_p)<-.001) {
+					countBig++;
+				}
+				//std::cout <<"theta= "<<theta<<std::endl; 
+				//std::cout <<"dp_p= "<<dp_p<<std::endl; 
+				std::cout <<"theta Modded= "<<theta/(1+dp_p)<<std::endl; 
+			}  			
 			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
-			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);    			
+			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);   
+			if (debugPrintFile) {
+			    //output tempLength to text file
+			    ofstream fileOut; 
+			    fileOut.open("firstChicaneLength.txt",ios::app);
+			    if (debug3) {
+			    	    std::cout <<"tempLength= "<<tempLength<<std::endl;
+			    }
+			    fileOut<< tempLength<< "\n";
+			    //fileOut<<"hi"<<endl;
+			    fileOut.close();
+			    
+			    fileOut.open("randomFirst.txt",ios::app);
+			    if (debug3) {
+			    	    std::cout <<"random1= "<<random1<<std::endl;
+			    }
+			    fileOut<< random1<< "\n";
+			    //fileOut<<"hi"<<endl;
+			    fileOut.close();			    
+			}
 		} else {
-			//do nothing its neutral	
+			//do nothing its neutral
+			if (debugPrintFile) {
+			    //output tempLength to text file
+			    ofstream fileOut; 
+			    fileOut.open("secondChicaneLength.txt",ios::app); 
+			    fileOut<< tempLength<< "\n";
+			    fileOut.close();
+			}			
 		}
 		//do second part of path
-		if ((charge-1)!=0) {
-			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/(charge-1);
+		if ((charge+1)!=0) {
+			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/(charge+1);
 			theta=strength*(effLength-tempLength)/rigidity;
 			dp_p = arr[i][5] * dp_p_coeff;
 			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
@@ -1701,8 +1766,11 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils:
 	}
     	
     }
+    if (debug4) {
+    	 std::cout <<"countBig= "<<countBig<<std::endl;   
+    }
     bunch->compress();
-    bunch->setCharge(charge-1);
+    bunch->setCharge(charge+1);
 }
 void dipoleXKick(Bunch* bunch, double effLength, double strength)
 {

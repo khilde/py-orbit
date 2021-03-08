@@ -373,7 +373,7 @@ double BunchTwissAnalysis::getEmittance(int ic)
 {	
 	// for x and y the pure betatron emittance is computed (subtracting the dispersive contribution)
 	if(ic < 0 || ic > 2 ) return 0.;
-	bool debug=true;
+	bool debug=false;
 	double x2_avg = fabs(this->getCorrelation(2*ic,2*ic));
 	double xp2_avg = fabs(this->getCorrelation(2*ic+1,2*ic+1));
 	double x_xp_avg = this->getCorrelation(2*ic,2*ic+1);

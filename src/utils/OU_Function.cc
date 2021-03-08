@@ -510,7 +510,9 @@ int Function::setInverse(Function* f_inv)
 	if(y_arr[1] > y_arr[0]){
 		for(int i = 0; i < (size-1); i++){
 			if(y_arr[i] >= y_arr[i+1]){
+			//if(y_arr[i] > y_arr[i+1]){
 				f_inv->clean();
+				std::cout << "here"<<std::endl;
 				return 0;
 			}
 		}
@@ -518,17 +520,23 @@ int Function::setInverse(Function* f_inv)
 	else{
 		for(int i = 0; i < (size-1); i++){
 			if(y_arr[i] <= y_arr[i+1]){
+			//if(y_arr[i] < y_arr[i+1]){
 				f_inv->clean();
+				std::cout << "here2"<<std::endl;
 				return 0;
 			}
 		}
 	}
-	
+		//std::cout << "maxX "<< f_inv->getMaxX() <<std::endl;
+		//std::cout << "maxY "<< getMaxY() <<std::endl;	
 	if(f_inv->getMaxX() > getMaxY()){
+		//std::cout << "maxX "<< f_inv->getMaxX() <<std::endl;
+		//std::cout << "maxY "<< getMaxY() <<std::endl;
 		finalize("ORBIT Utils Function class: The Function method  setInverse(Function* f_inv) f_inv->getMaxX() > getMaxY()");
 		return 0;
 	}
-	
+		//std::cout << "minX "<< f_inv->getMinX() <<std::endl;
+		//std::cout << "minY "<< getMinY() <<std::endl;	
 	if(f_inv->getMinX() < getMinY()){
 		finalize("ORBIT Utils Function class: The Function method  setInverse(Function* f_inv) f_inv->getMinX() < getMinY()");
 		return 0;

@@ -212,7 +212,7 @@ class TEAPOT_Ring(AccLattice):
 		for node in self.getNodes():
 			bunchwrapper = BunchWrapTEAPOT("Bunch Wrap")
 			bunchwrapper.getParamsDict()["ring_length"] = self.getLength()
-			if (node.getName().strip()=="DH_A11" or node.getName().strip()=="DH_A12") :
+			if (node.getName().strip()=="DH_A11" or node.getName().strip()=="DH_A12" or node.getName().strip()=="DB23") :
 				node.addChildNode(bunchwrapper, AccNode.ENTRANCE)
 				#if (node.getName().strip()=="DH_A11"):
 				#	node.setnParts(43)
