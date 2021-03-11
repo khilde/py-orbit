@@ -109,6 +109,7 @@ void Collimator::collimateBunch(Bunch* bunch, Bunch* lostbunch){
 			
 			//If in the collimator, tally the hit and start tracking
 			if(coll_flag == 1) {
+				std::cout<<"help1"<<std::endl;
 				//Lose it for black absorber
 				if(ma_ >= 8){
 					loseParticle(bunch, lostbunch, ip, nLost, coll_flag, zrl);
@@ -350,6 +351,7 @@ int Collimator::driftParticle(int coll_flag, double& zrl, double length, double*
 	double eps = 1.0e-8;
 	double dlength = length * 1.0e-4;
 	double stepsize = 0.001;
+	//double stepsize = length;
 
 	while((coll_flag == 0) && (zrl > 0))
 	{
@@ -358,17 +360,24 @@ int Collimator::driftParticle(int coll_flag, double& zrl, double length, double*
 		if(stepsize - zrl > eps) stepsize = zrl + dlength;
 				
 		double pfac = Collimator::getPFactor(coords, syncpart);
-	
+		//dp_p=pfac-1.0
+		//KNL=1.0/pfac
 		coords[0] += stepsize * coords[1] / pfac;
 		coords[2] += stepsize * coords[3] / pfac;
 		zrl -= stepsize;
 		coll_flag = Collimator::checkCollFlag(coords[0], coords[2]);
 		
+		double gamma2i=1.0/(syncpart->getGamma()*syncpart->getGamma());
+		double phifac = (coords[1] * coords[1] + coords[3] * coords[3] +
+			  (pfac-1.0)* (pfac-1.0)* gamma2i) / 2.0;
+		phifac = (phifac * 1.0/pfac - (pfac-1.0) * gamma2i) * 1.0/pfac;
+		coords[4] -= stepsize * phifac;
+		
 		nHits++;
 		if(coll_flag == 1) return 1;
 
 	}
-
+	std::cout<<" coords[0]= "<<coords[0]<<endl;
 	return 0;
 }
 

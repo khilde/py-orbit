@@ -47,8 +47,9 @@ class GeneralDipoleStrip(BaseTEAPOT):
 		self.addParam("A1",2.47e-6)
 		self.addParam("A2",4.49e9)
 		
-		self.function1=None
-		self.function2=None
+		self.functionInverse=None
+		self.functionXPRigidity=None
+		self.functionXRigidity=None
 		
 	
 	def setMagneticFieldStrength(self, strength=1.0):
@@ -74,17 +75,26 @@ class GeneralDipoleStrip(BaseTEAPOT):
 	def getEffLength(self):
 		#gets the effective length of the magnet
 		return self.getParam("effLength")
-	
-
-	def setFunction1(self,function):
-		self.function1=function
-	def getFunction1(self):
-		return self.function1	
 		
-	def setFunction2(self,function):
-		self.function2=function
-	def getFunction1(self):
-		return self.function2		
+	def setFunctionCDF(self,function):
+		self.functionCDF=function
+	def getFunctionCDF(self):
+		return self.functionCDF		
+
+	def setFunctionInverse(self,function):
+		self.functionInverse=function
+	def getFunctionInverse(self):
+		return self.functionInverse	
+		
+	def setFunctionXPRigidity(self,function):
+		self.functionXPRigidity=function
+	def getFunctionXPRigidity(self):
+		return self.functionXPRigidity		
+		
+	def setFunctionXRigidity(self,function):
+		self.functionXRigidity=function
+	def getFunctionXRigidity(self):
+		return self.functionXRigidity			
 	def track(self, paramsDict):
 		"""
 		The Dipole Combined Functions TEAPOT  class implementation of
@@ -100,9 +110,9 @@ class GeneralDipoleStrip(BaseTEAPOT):
 		#charge==0 means second dipole
 		if bunch.charge() <0:
 			print "hi1"
-			TPB.dipoleGeneralKickStrip(bunch,firstChicaneFail,self.function1,self.function2, length, strength,fieldDirection)
+			TPB.dipoleGeneralKickStrip(bunch,firstChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity, length, strength,fieldDirection)
 			print "hi2"
 		elif bunch.charge()==0:
-			TPB.dipoleGeneralKickStrip(bunch,secondChicaneFail,self.function1,self.function2, length, strength,fieldDirection)
+			TPB.dipoleGeneralKickStrip(bunch,secondChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity, length, strength,fieldDirection)
 
 	

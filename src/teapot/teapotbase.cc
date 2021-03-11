@@ -1625,13 +1625,14 @@ void dipoleGeneralKick(Bunch* bunch, double effLength, double strength,double fi
 //
 ///////////////////////////////////////////////////////////////////////////
 
-void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils::Function* survivalProbFunction, OrbitUtils::Function* inverseFunction, double effLength, double strength,double fieldDirection)
+void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::Function* CDFFunction, OrbitUtils::Function* inverseFunction, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction, double effLength, double strength,double fieldDirection)
 {
     bool debug=false;
     bool debug2=false;
     bool debug3=false;
     bool debug4=false;
     bool debug5=false;
+    bool debug6=false;
     bool debugPrintFile=true;
 
     long idum = (unsigned)time(0);
@@ -1645,6 +1646,7 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils:
     double charge = bunch->getCharge();
     double rigidity=0;
     double theta;
+    double offset;
     double tempLength;
     double cosFD=cos(fieldDirection);
     double sinFD=sin(fieldDirection);
@@ -1686,12 +1688,25 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils:
     {
     	random1 = Random::ran1(idum);
     	//first check if it gets stripped
-    	if (random1<survivalProbFunction->getY(effLength)) {
+    	if (random1>CDFFunction->getY(effLength)) {
     		//it doesnt get stripped
     		if (charge!=0) {
     			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
-    			theta=strength*effLength/rigidity;			
-    			dp_p = arr[i][5] * dp_p_coeff;      			
+    			theta=xpRigidityFunction->getY(effLength)/rigidity;
+    			offset=xRigidityFunction->getY(effLength)/rigidity;
+    			//this should be same as below.
+    			//theta=strength*effLength/rigidity;
+		        if (debug6) {
+		        	std::cout <<"theta=xpRigidityFunction->getY(effLength)/rigidity= "<<theta<<std::endl;
+		        	std::cout <<"this should equal theta below for constant B field"<<std::endl; 
+		        	std::cout <<"theta=strength*effLength/rigidity= "<<strength*effLength/rigidity<<std::endl; 	
+		        }  			
+    			dp_p = arr[i][5] * dp_p_coeff;   
+    			//initial offset + drift from inital yp + tracking through magnet 
+   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength+cosFD*offset/(1+dp_p);
+    			//initial offset + drift from inital xp + tracking through magnet 
+   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength-sinFD*offset/(1+dp_p);
+   			
 			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
 			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);    			
     		} else {
@@ -1701,7 +1716,7 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils:
 		bunch->deleteParticleFast(i);    	
 	} else {
 		//it will be stripped
-		random1 = Random::ran1(idum);
+		//random1 = Random::ran1(idum);
 		//how far it travels before being stripped
 		tempLength=inverseFunction->getY(random1);
 		if (debug5) {
@@ -1712,7 +1727,9 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils:
 		//do first part of path
 		if (charge!=0) {
 			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
-			theta=strength*tempLength/rigidity;
+			theta=xpRigidityFunction->getY(tempLength)/rigidity;
+    			offset=xRigidityFunction->getY(tempLength)/rigidity;
+			//theta=strength*tempLength/rigidity;
 			dp_p = arr[i][5] * dp_p_coeff;
 			if (debug4) {
 				if (theta/(1+dp_p)<-.001) {
@@ -1721,7 +1738,12 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils:
 				//std::cout <<"theta= "<<theta<<std::endl; 
 				//std::cout <<"dp_p= "<<dp_p<<std::endl; 
 				std::cout <<"theta Modded= "<<theta/(1+dp_p)<<std::endl; 
-			}  			
+			}  
+    			//initial offset + drift from inital yp + tracking through magnet 
+   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength+cosFD*offset/(1+dp_p);
+    			//initial offset + drift from inital xp + tracking through magnet 
+   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength-sinFD*offset/(1+dp_p);
+			
 			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
 			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);   
 			if (debugPrintFile) {
