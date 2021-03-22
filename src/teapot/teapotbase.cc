@@ -1675,6 +1675,10 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::
     	    if (charge==-1) {
 		    fileOut.open("firstChicaneLength.txt");  
 		    fileOut.close();
+		    fileOut.open("firstChicaneL_A_D.txt");  
+		    fileOut.close();
+		    //fileOut.open("firstChicaneDisplacement.txt");  
+		    //fileOut.close();		    
 		    fileOut.open("randomFirst.txt");  
 		    fileOut.close();		    
 	    } else if (charge==0) {
@@ -1700,12 +1704,12 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::
 		        	std::cout <<"theta=xpRigidityFunction->getY(effLength)/rigidity= "<<theta<<std::endl;
 		        	std::cout <<"this should equal theta below for constant B field"<<std::endl; 
 		        	std::cout <<"theta=strength*effLength/rigidity= "<<strength*effLength/rigidity<<std::endl; 	
-		        }  			
+		        }  			        
     			dp_p = arr[i][5] * dp_p_coeff;   
     			//initial offset + drift from inital yp + tracking through magnet 
-   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength+cosFD*offset/(1+dp_p);
+   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength*1.0 / (1.0 + dp_p)+cosFD*offset/(1.+dp_p);
     			//initial offset + drift from inital xp + tracking through magnet 
-   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength-sinFD*offset/(1+dp_p);
+   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-sinFD*offset/(1+dp_p);
    			
 			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
 			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);    			
@@ -1740,9 +1744,9 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::
 				std::cout <<"theta Modded= "<<theta/(1+dp_p)<<std::endl; 
 			}  
     			//initial offset + drift from inital yp + tracking through magnet 
-   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength+cosFD*offset/(1+dp_p);
+   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength/(1.+dp_p)+cosFD*offset/(1+dp_p);
     			//initial offset + drift from inital xp + tracking through magnet 
-   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength-sinFD*offset/(1+dp_p);
+   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-sinFD*offset/(1+dp_p);
 			
 			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
 			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);   
@@ -1756,6 +1760,17 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::
 			    fileOut<< tempLength<< "\n";
 			    //fileOut<<"hi"<<endl;
 			    fileOut.close();
+
+			    fileOut.open("firstChicaneL_A_D.txt",ios::app);
+			    if (debug3) {
+			    	    std::cout <<"theta= "<<theta<<std::endl;
+			    }
+			    fileOut<< tempLength<< ", ";
+			    fileOut<< -sinFD*theta<< ", ";
+			    fileOut<< -sinFD*offset<< "\n";
+			    //fileOut<<"hi"<<endl;
+			    fileOut.close();
+					    
 			    
 			    fileOut.open("randomFirst.txt",ios::app);
 			    if (debug3) {
