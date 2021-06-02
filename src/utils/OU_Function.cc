@@ -502,7 +502,16 @@ int Function::setInverse(Function* f_inv)
 		f_inv->clean();
 		for(int i = 0; i < size; i++){
 			double xx = getMinY() + i*(getMaxY() - getMinY())/(size - 1);
+			//need to have /(size-1)  before (getMaxY() - getMinY()) to avoid rounding errors when i==size-1 other it will may not pass the check if(f_inv->getMaxX() > getMaxY()) later.
+			//double xx = getMinY() + i/(size - 1)*(getMaxY() - getMinY());
+			if (i==size-1) {
+				xx==getMaxY();
+			}
 			f_inv->add(xx,0.);
+			if (i==size-1) {
+				printf("xx= %.17g maxY= %.17g\n",xx,getMaxY());		
+				printf("maxX= %.17g maxY= %.17g\n",f_inv->getMaxX(),getMaxY());				
+			}
 		}
 		f_inv->setConstStep(1);
 	}
@@ -527,11 +536,15 @@ int Function::setInverse(Function* f_inv)
 			}
 		}
 	}
-		//std::cout << "maxX "<< f_inv->getMaxX() <<std::endl;
-		//std::cout << "maxY "<< getMaxY() <<std::endl;	
+		std::cout << "maxX "<< f_inv->getMaxX() -1 <<std::endl;
+		std::cout << "maxY "<< getMaxY()-1 <<std::endl;	
+		std::cout << "maxX-maxY "<< f_inv->getMaxX()-getMaxY() <<std::endl;
+		printf("maxX= %.17g maxY= %.17g\n",f_inv->getMaxX(),getMaxY());
+		printf("maxX-1= %.17g maxY-1= %.17g\n",f_inv->getMaxX()-1,getMaxY()-1);
 	if(f_inv->getMaxX() > getMaxY()){
-		//std::cout << "maxX "<< f_inv->getMaxX() <<std::endl;
-		//std::cout << "maxY "<< getMaxY() <<std::endl;
+		std::cout << "maxX "<< f_inv->getMaxX() <<std::endl;
+		std::cout << "maxY "<< getMaxY() <<std::endl;
+		std::cout << "maxX-maxY "<< f_inv->getMaxX()-getMaxY() <<std::endl;
 		finalize("ORBIT Utils Function class: The Function method  setInverse(Function* f_inv) f_inv->getMaxX() > getMaxY()");
 		return 0;
 	}

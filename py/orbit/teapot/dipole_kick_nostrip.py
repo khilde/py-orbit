@@ -31,7 +31,7 @@ def printDebug(m1,m2="",m3="",m4="",m5="",m6="",m7="",m8="") :
 	if debugPrint==True:
 		print m1,m2,m3,m4,m5,m6,m7,m8
 		
-class GeneralDipoleStrip(BaseTEAPOT):
+class GeneralDipoleNoStrip(BaseTEAPOT):
 	def __init__(self, name = "bend no name"):
 		"""
 		Constructor. Creates the Dipole Combined Functions TEAPOT element .
@@ -113,14 +113,12 @@ class GeneralDipoleStrip(BaseTEAPOT):
 		the AccNodeBunchTracker class track(probe) method.
 		"""
 		length = self.getEffLength()
-		strength=self.getMagneticFieldStrength()
 		fieldDirection=self.getFieldDirection()
 		bunch = paramsDict["bunch"]
-		firstChicaneFail=paramsDict["firstChicaneFail"]
-		secondChicaneFail=paramsDict["secondChicaneFail"]
+
 		#charge <0 means first dipole
 		#charge==0 means second dipole
-		TPB.dipoleGeneralKickStrip(bunch,firstChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity, length, strength,fieldDirection)
+		TPB.dipoleGeneralKickNoStrip(bunch,self.functionXPRigidity,self.functionXRigidity, length,fieldDirection)
 		#if bunch.charge() <0:
 			#print "hi1"
 			#TPB.dipoleGeneralKickStrip(bunch,firstChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity, length, strength,fieldDirection)

@@ -80,7 +80,8 @@ namespace teapot_base
     void dipoleGeneralKick(Bunch* bunch, double effLength, double strength,double fieldDirection);
     void dipoleXKick(Bunch* bunch, double effLength, double strength);
     void dipoleYKick(Bunch* bunch, double effLength, double strength);
-    void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils::Function* CDFFunction, OrbitUtils::Function* inverseFunction, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction, double effLength, double strength,double fieldDirection);
+    void dipoleGeneralKickNoStrip(Bunch* bunch, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction, double effLength,double fieldDirection);
+    void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils::Function* CDFFunction, OrbitUtils::Function* inverseFunction, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction,OrbitUtils::Function* xp_mRigidityFunction, OrbitUtils::Function* x_mRigidityFunction, double effLength, double strength,double fieldDirection);
     
 }
 

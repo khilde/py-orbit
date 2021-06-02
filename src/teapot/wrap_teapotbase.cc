@@ -516,6 +516,27 @@ extern "C"
         Py_INCREF(Py_None);
         return Py_None;
     }   
+    //Custom Dipole Kick with no stripping
+    static PyObject* wrap_dipoleGeneralKickNoStrip(PyObject *self, PyObject *args)
+    {
+        PyObject* pyBunch;
+        PyObject* pyFunction;
+        PyObject* pyFunction2;
+        double effLength;
+        double fieldDirection;
+
+        if(!PyArg_ParseTuple(	args, "OOOdd:dipoleGeneralKickNoStrip",
+                             &pyBunch, &pyFunction, &pyFunction2, &effLength,&fieldDirection))
+        {
+            error("teapotbase - dipoleGeneralKickStrip - cannot parse arguments!");
+        }
+        Bunch* cpp_bunch = (Bunch*) ((pyORBIT_Object *) pyBunch)->cpp_obj;
+        OrbitUtils::Function* cpp_Function = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction)->cpp_obj;
+        OrbitUtils::Function* cpp_Function2 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction2)->cpp_obj;    
+        teapot_base::dipoleGeneralKickNoStrip(cpp_bunch,cpp_Function,cpp_Function2, effLength,fieldDirection);
+        Py_INCREF(Py_None);
+        return Py_None;
+    }       
     //Custom Dipole Kick with stripping
     static PyObject* wrap_dipoleGeneralKickStrip(PyObject *self, PyObject *args)
     {
@@ -525,12 +546,14 @@ extern "C"
         PyObject* pyFunction2;
         PyObject* pyFunction3;
         PyObject* pyFunction4;
+        PyObject* pyFunction5;
+        PyObject* pyFunction6;
         double effLength;
         double strength;
         double fieldDirection;
 
-        if(!PyArg_ParseTuple(	args, "OOOOOOddd:dipoleGeneralKickStrip",
-                             &pyBunch, &pyBunch2, &pyFunction, &pyFunction2, &pyFunction3, &pyFunction4, &effLength, &strength,&fieldDirection))
+        if(!PyArg_ParseTuple(	args, "OOOOOOOOddd:dipoleGeneralKickStrip",
+                             &pyBunch, &pyBunch2, &pyFunction, &pyFunction2, &pyFunction3, &pyFunction4, &pyFunction5, &pyFunction6, &effLength, &strength,&fieldDirection))
         {
             error("teapotbase - dipoleGeneralKickStrip - cannot parse arguments!");
         }
@@ -540,7 +563,9 @@ extern "C"
         OrbitUtils::Function* cpp_Function2 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction2)->cpp_obj;    
         OrbitUtils::Function* cpp_Function3 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction3)->cpp_obj;   
         OrbitUtils::Function* cpp_Function4 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction4)->cpp_obj;  
-        teapot_base::dipoleGeneralKickStrip(cpp_bunch,cpp_bunch2,cpp_Function,cpp_Function2,cpp_Function3,cpp_Function4, effLength, strength,fieldDirection);
+        OrbitUtils::Function* cpp_Function5 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction5)->cpp_obj;
+        OrbitUtils::Function* cpp_Function6 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction6)->cpp_obj;
+        teapot_base::dipoleGeneralKickStrip(cpp_bunch,cpp_bunch2,cpp_Function,cpp_Function2,cpp_Function3,cpp_Function4,cpp_Function5,cpp_Function6, effLength, strength,fieldDirection);
         Py_INCREF(Py_None);
         return Py_None;
     }    
@@ -573,6 +598,7 @@ extern "C"
 			{"dipoleGeneralKick",       wrap_dipoleGeneralKick,          METH_VARARGS, "Custom dipole kick "},
 			{"dipoleXKick",       wrap_dipoleXKick,          METH_VARARGS, "Custom dipole kick with field in X direction"},
 			{"dipoleYKick",       wrap_dipoleYKick,          METH_VARARGS, "Custom dipole kick with field in Y direction"},
+			{"dipoleGeneralKickNoStrip",       wrap_dipoleGeneralKickNoStrip,          METH_VARARGS, "Custom dipole kick with no stripping"},
 			{"dipoleGeneralKickStrip",       wrap_dipoleGeneralKickStrip,          METH_VARARGS, "Custom dipole kick with stripping"},
 			{ NULL, NULL }
     };

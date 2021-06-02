@@ -1603,13 +1603,12 @@ void dipoleGeneralKick(Bunch* bunch, double effLength, double strength,double fi
     	
     }
 }
-
 ///////////////////////////////////////////////////////////////////////////
 // NAME
-//   dipoleGeneralKickStrip
+//   dipoleGeneralKickNoStrip
 //
 // DESCRIPTION
-//   Custom dipole kick with stripping
+//   Custom dipole kick without Stripping
 //
 // PARAMETERS
 //   bunch  = reference to the macro-particle bunch
@@ -1625,7 +1624,112 @@ void dipoleGeneralKick(Bunch* bunch, double effLength, double strength,double fi
 //
 ///////////////////////////////////////////////////////////////////////////
 
-void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::Function* CDFFunction, OrbitUtils::Function* inverseFunction, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction, double effLength, double strength,double fieldDirection)
+void dipoleGeneralKickNoStrip(Bunch* bunch, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction, double effLength,double fieldDirection)
+{
+    bool debug=false;
+    bool debug2=false;
+    bool debug3=false;
+    bool debug4=false;
+    bool debug5=false;
+    bool debug6=false;
+    bool debugPrintFile=false;
+    
+    double charge = bunch->getCharge();
+    double rigidity=0;
+    double theta;
+    double offset;
+    double tempLength;
+    double cosFD=cos(fieldDirection);
+    double sinFD=sin(fieldDirection);
+
+  
+    SyncPart* syncPart = bunch->getSyncPart();
+    if (charge!=0) {
+    	    rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
+    }
+   
+    
+    double dp_p_coeff = 1.0 / (syncPart->getMomentum() * syncPart->getBeta());
+    double dp_p;
+    if (debug) {
+    	std::cout <<"syncPart->getMomentum()= "<<syncPart->getMomentum()<<std::endl;
+    	std::cout <<"rigidity= "<<rigidity<<std::endl; 
+    	std::cout <<"theta= "<<theta<<std::endl; 
+    	std::cout <<"charge= "<<charge<<std::endl; 
+    	
+    }
+    //coordinate array [part. index][x,xp,y,yp,z,dE]
+    double** arr = bunch->coordArr();
+    if (debugPrintFile) {
+    	    //erase current file
+    	    ofstream fileOut;
+    	    if (charge==-1) {
+		    fileOut.open("firstChicaneLength.txt");  
+		    fileOut.close();
+		    fileOut.open("firstChicaneL_A_D.txt");  
+		    fileOut.close();
+		    //fileOut.open("firstChicaneDisplacement.txt");  
+		    //fileOut.close();		    
+		    fileOut.open("randomFirst.txt");  
+		    fileOut.close();		    
+	    } else if (charge==0) {
+	    	    fileOut.open("secondChicaneLength.txt");  
+	    	    fileOut.close();   
+	    }
+    }
+
+    for(int i = 0; i < bunch->getSize(); i++)
+    {
+	if (charge!=0) {
+		rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
+		theta=xpRigidityFunction->getY(effLength)/rigidity;
+		offset=xRigidityFunction->getY(effLength)/rigidity;
+		//this should be same as below.
+		//theta=strength*effLength/rigidity;
+		if (debug6) {
+			std::cout <<"theta=xpRigidityFunction->getY(effLength)/rigidity= "<<theta<<std::endl;
+		}  			        
+		dp_p = arr[i][5] * dp_p_coeff;   
+		//initial offset + drift from inital yp + tracking through magnet 
+		arr[i][2]  = arr[i][2]+arr[i][3]*effLength*1.0 / (1.0 + dp_p)+cosFD*offset/(1.+dp_p);
+		//initial offset + drift from inital xp + tracking through magnet 
+		arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-sinFD*offset/(1+dp_p);
+		
+		arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
+		arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);    			
+	} else {
+		//its neutral 	
+		dp_p = arr[i][5] * dp_p_coeff;   
+		//initial offset + drift from inital yp
+		arr[i][2]  = arr[i][2]+arr[i][3]*effLength*1.0 / (1.0 + dp_p);
+		//initial offset + drift from inital xp
+		arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p);    			
+	}
+    	
+    }
+}
+///////////////////////////////////////////////////////////////////////////
+// NAME
+//   dipoleGeneralKickStrip
+//
+// DESCRIPTION
+//   Custom dipole kick with stripping
+//
+// PARAMETERS
+//   bunch  = reference to the macro-particle bunch
+//   failedToStripBunch = reference to the macro-particle bunch that fails to get stripped
+//   CDFFunction = function that gives the probability a particle survived after travels distance x
+//   inverseFunction = function that is the inverse of the pdf of the particle decay
+//   effLength = the effective Length of the dipole
+//   strength = the strength of the magnetic field in Tesla's
+//   fieldDirection= the direction of the magnetic field in radians. 0 is positive x axis.
+//
+// RETURNS
+//   Nothing
+//
+///////////////////////////////////////////////////////////////////////////
+
+void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::Function* CDFFunction, OrbitUtils::Function* inverseFunction, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction,OrbitUtils::Function* xp_mRigidityFunction, OrbitUtils::Function* x_mRigidityFunction, double effLength, double strength,double fieldDirection)
 {
     bool debug=false;
     bool debug2=false;
@@ -1714,7 +1818,12 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::
 			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
 			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);    			
     		} else {
-    			//its neutral nothing to do	
+    			//its neutral 	
+    			dp_p = arr[i][5] * dp_p_coeff;   
+    			//initial offset + drift from inital yp
+   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength*1.0 / (1.0 + dp_p);
+    			//initial offset + drift from inital xp
+   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p);    			
     		}
 		failedToStripBunch->addParticle(arr[i][0], arr[i][1], arr[i][2], arr[i][3], arr[i][4], arr[i][5]);
 		bunch->deleteParticleFast(i);    	
@@ -1728,8 +1837,8 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::
 			std::cout <<"random1= "<<random1<<std::endl;
 		}
 		//std::cout <<"tempLength= "<<tempLength<<std::endl;
-		//do first part of path
-		if (charge!=0) {
+		//if charge is -1
+		if (charge==-1) {
 			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
 			theta=xpRigidityFunction->getY(tempLength)/rigidity;
     			offset=xRigidityFunction->getY(tempLength)/rigidity;
@@ -1743,10 +1852,10 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::
 				//std::cout <<"dp_p= "<<dp_p<<std::endl; 
 				std::cout <<"theta Modded= "<<theta/(1+dp_p)<<std::endl; 
 			}  
-    			//initial offset + drift from inital yp + tracking through magnet 
-   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength/(1.+dp_p)+cosFD*offset/(1+dp_p);
-    			//initial offset + drift from inital xp + tracking through magnet 
-   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-sinFD*offset/(1+dp_p);
+    			//initial offset + drift from inital yp + tracking through magnet prior to being stripped+ tracking through magnet after being stripped
+   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength/(1.+dp_p)+cosFD*offset/(1+dp_p)+cosFD*theta*(effLength-tempLength)/(1+dp_p);
+    			//initial offset + drift from inital xp + tracking through magnet prior to being stripped+ tracking through magnet after being stripped
+   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-sinFD*offset/(1+dp_p)-sinFD*theta*(effLength-tempLength)/(1+dp_p);
 			
 			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
 			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);   
@@ -1767,7 +1876,7 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::
 			    }
 			    fileOut<< tempLength<< ", ";
 			    fileOut<< -sinFD*theta<< ", ";
-			    fileOut<< -sinFD*offset<< "\n";
+			    fileOut<< -sinFD*(offset+theta*(effLength-tempLength)) << "\n";
 			    //fileOut<<"hi"<<endl;
 			    fileOut.close();
 					    
@@ -1780,7 +1889,8 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::
 			    //fileOut<<"hi"<<endl;
 			    fileOut.close();			    
 			}
-		} else {
+			//if charge==0
+		} else if (charge==0) {
 			//do nothing its neutral
 			if (debugPrintFile) {
 			    //output tempLength to text file
@@ -1789,16 +1899,27 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::
 			    fileOut<< tempLength<< "\n";
 			    fileOut.close();
 			}			
-		}
-		//do second part of path
-		if ((charge+1)!=0) {
-			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/(charge+1);
-			theta=strength*(effLength-tempLength)/rigidity;
+		
+		
+			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/(charge+1); 
+			theta=xp_mRigidityFunction->getY(tempLength)/rigidity;
+    			offset=x_mRigidityFunction->getY(tempLength)/rigidity;
+			//theta=strength*tempLength/rigidity;
 			dp_p = arr[i][5] * dp_p_coeff;
+
+			//no tracking to be done prior to be stripping separate from inital xp.
+    			//initial offset + drift from inital yp + tracking through magnet after being stripped
+   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength/(1.+dp_p)+cosFD*offset/(1+dp_p);
+    			//initial offset + drift from inital xp + tracking through magnet after being stripped
+   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-sinFD*offset/(1+dp_p);
+			
 			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
-			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p); 			
+			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);   
+			
+		
 		} else {
-			//do nothing its neutral	
+			std::cout <<"this shouldnt be reached, charge="<<charge<<std::endl;
+			//this shouldnt be reached	
 		}		
 	}
     	

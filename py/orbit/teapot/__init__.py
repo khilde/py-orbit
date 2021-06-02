@@ -21,6 +21,7 @@ from dipole_kick import XDipole
 from dipole_kick import YDipole
 
 from dipole_kick_strip import GeneralDipoleStrip
+from dipole_kick_nostrip import GeneralDipoleNoStrip
 
 from teapot import TPB
 
