@@ -82,7 +82,8 @@ namespace teapot_base
     void dipoleYKick(Bunch* bunch, double effLength, double strength);
     void dipoleGeneralKickNoStrip(Bunch* bunch, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction, double effLength,double fieldDirection);
     void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch, OrbitUtils::Function* CDFFunction, OrbitUtils::Function* inverseFunction, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction,OrbitUtils::Function* xp_mRigidityFunction, OrbitUtils::Function* x_mRigidityFunction, double effLength, double strength,double fieldDirection);
-    
+    void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::Function* CDFFunction, OrbitUtils::Function* inverseFunction, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction,OrbitUtils::Function* xp_mRigidityFunction, OrbitUtils::Function* x_mRigidityFunction, OrbitUtils::Function* ypRigidityFunction, OrbitUtils::Function* yRigidityFunction,OrbitUtils::Function* yp_mRigidityFunction, OrbitUtils::Function* y_mRigidityFunction, double effLength);
+    void dipoleGeneralNoKickStripSeperateField(Bunch* bunch, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction, OrbitUtils::Function* ypRigidityFunction, OrbitUtils::Function* yRigidityFunction, double effLength);
 }
 
 #endif  //TEAPOT_BASE_H

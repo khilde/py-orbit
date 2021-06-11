@@ -31,22 +31,19 @@ def printDebug(m1,m2="",m3="",m4="",m5="",m6="",m7="",m8="") :
 	if debugPrint==True:
 		print m1,m2,m3,m4,m5,m6,m7,m8
 		
-class GeneralDipoleNoStrip(BaseTEAPOT):
+class GeneralDipoleNoStripSeperateField(BaseTEAPOT):
 	def __init__(self, name = "bend no name"):
 		"""
 		Constructor. Creates the Dipole Combined Functions TEAPOT element .
 		"""
 		BaseTEAPOT.__init__(self,name)
 		self.setType("child dipole teapot")
-		#magnetic field in Tesla
-		self.addParam("B",1.0)
+		
 		#set field direction. (0 is x-axis, pi/2 is y-xaxis)
-		self.addParam("fieldDirection",1)
 		#effective length of dipole
 		self.addParam("effLength",.01)
 		self.addParam("A1",2.47e-6)
 		self.addParam("A2",4.49e9)
-	
 		
 		self.functionInverse=None
 		self.functionXPRigidity=None
@@ -54,22 +51,12 @@ class GeneralDipoleNoStrip(BaseTEAPOT):
 		self.functionXP_mRigidity=None
 		self.functionX_mRigidity=None		
 		
+		self.functionYPRigidity=None
+		self.functionYRigidity=None
+		self.functionYP_mRigidity=None
+		self.functionY_mRigidity=None			
+		
 	
-	def setMagneticFieldStrength(self, strength=1.0):
-		#set magnetic field strength
-		self.setParam("B",strength)
-		
-	def getMagneticFieldStrength(self):
-		#returns magnetic field strength
-		return self.getParam("B")
-		
-	def setFieldDirection(self, direction=0):
-		#set the magnetic field direction
-		self.setParam("fieldDirection",direction)
-
-	def getFieldDirection(self):
-		#get the magnetic field direction
-		return self.getParam("fieldDirection")
 		
 	def setEffLength(self,effLength=0.01):
 		#sets the effective length of the magnet
@@ -107,24 +94,38 @@ class GeneralDipoleNoStrip(BaseTEAPOT):
 	def setFunctionX_mRigidity(self,function):
 		self.functionX_mRigidity=function
 	def getFunctionX_mRigidity(self):
-		return self.functionX_mRigidity			
+		return self.functionX_mRigidity	
+		
+		
+	def setFunctionYPRigidity(self,function):
+		self.functionYPRigidity=function
+	def getFunctionYPRigidity(self):
+		return self.functionYPRigidity		
+		
+	def setFunctionYRigidity(self,function):
+		self.functionYRigidity=function
+	def getFunctionYRigidity(self):
+		return self.functionYRigidity	
+		
+	def setFunctionYP_mRigidity(self,function):
+		self.functionYP_mRigidity=function
+	def getFunctionYP_mRigidity(self):
+		return self.functionYP_mRigidity		
+		
+	def setFunctionY_mRigidity(self,function):
+		self.functionY_mRigidity=function
+	def getFunctionY_mRigidity(self):
+		return self.functionY_mRigidity			
 	def track(self, paramsDict):
 		"""
 		The Dipole Combined Functions TEAPOT  class implementation of
 		the AccNodeBunchTracker class track(probe) method.
 		"""
 		length = self.getEffLength()
-		fieldDirection=self.getFieldDirection()
+
 		bunch = paramsDict["bunch"]
 
-		#charge <0 means first dipole
-		#charge==0 means second dipole
-		TPB.dipoleGeneralKickNoStrip(bunch,self.functionXPRigidity,self.functionXRigidity, length,fieldDirection)
-		#if bunch.charge() <0:
-			#print "hi1"
-			#TPB.dipoleGeneralKickStrip(bunch,firstChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity, length, strength,fieldDirection)
-			#print "hi2"
-		#elif bunch.charge()==0:
-			#TPB.dipoleGeneralKickStrip(bunch,secondChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity, length, strength,fieldDirection)
+		TPB.dipoleGeneralNoKickStripSeperateField(bunch,self.functionXPRigidity,self.functionXRigidity,self.functionYPRigidity,self.functionYRigidity,length)
+
 
 	

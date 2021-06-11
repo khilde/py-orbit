@@ -23,7 +23,11 @@ from dipole_kick import YDipole
 from dipole_kick_strip import GeneralDipoleStrip
 from dipole_kick_nostrip import GeneralDipoleNoStrip
 
+from dipole_kick_strip_separate_field_components import GeneralDipoleStripSeperateField
+from dipole_kick_nostrip_separate_field_components import GeneralDipoleNoStripSeperateField
+
 from teapot import TPB
+from dipoleStripperLatticeModifications import addDipoleStripperNode
 
 from teapot_matrix_lattice import TEAPOT_MATRIX_Lattice
 

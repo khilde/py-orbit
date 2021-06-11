@@ -569,6 +569,69 @@ extern "C"
         Py_INCREF(Py_None);
         return Py_None;
     }    
+    //Custom Dipole Kick with stripping with seperate field components
+    static PyObject* wrap_dipoleGeneralKickStripSeperateField(PyObject *self, PyObject *args)
+    {
+        PyObject* pyBunch;
+        PyObject* pyBunch2;
+        PyObject* pyFunction;
+        PyObject* pyFunction2;
+        PyObject* pyFunction3;
+        PyObject* pyFunction4;
+        PyObject* pyFunction5;
+        PyObject* pyFunction6;
+        PyObject* pyFunction7;
+        PyObject* pyFunction8;
+        PyObject* pyFunction9;
+        PyObject* pyFunction10;
+        double effLength;
+
+        if(!PyArg_ParseTuple(	args, "OOOOOOOOOOOOd:dipoleGeneralKickStripSeperateField",
+                             &pyBunch, &pyBunch2, &pyFunction, &pyFunction2, &pyFunction3, &pyFunction4, &pyFunction5, &pyFunction6, &pyFunction7, &pyFunction8, &pyFunction9, &pyFunction10, &effLength))
+        {
+            error("teapotbase - dipoleGeneralKickStripSeperateField - cannot parse arguments!");
+        }
+        Bunch* cpp_bunch = (Bunch*) ((pyORBIT_Object *) pyBunch)->cpp_obj;
+        Bunch* cpp_bunch2 = (Bunch*) ((pyORBIT_Object *) pyBunch2)->cpp_obj;
+        OrbitUtils::Function* cpp_Function = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction)->cpp_obj;
+        OrbitUtils::Function* cpp_Function2 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction2)->cpp_obj;    
+        OrbitUtils::Function* cpp_Function3 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction3)->cpp_obj;   
+        OrbitUtils::Function* cpp_Function4 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction4)->cpp_obj;  
+        OrbitUtils::Function* cpp_Function5 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction5)->cpp_obj;
+        OrbitUtils::Function* cpp_Function6 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction6)->cpp_obj;
+        OrbitUtils::Function* cpp_Function7 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction7)->cpp_obj;
+        OrbitUtils::Function* cpp_Function8 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction8)->cpp_obj;
+        OrbitUtils::Function* cpp_Function9 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction9)->cpp_obj;
+        OrbitUtils::Function* cpp_Function10 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction10)->cpp_obj;
+        teapot_base::dipoleGeneralKickStripSeperateField(cpp_bunch,cpp_bunch2,cpp_Function,cpp_Function2,cpp_Function3,cpp_Function4,cpp_Function5,cpp_Function6, cpp_Function7, cpp_Function8, cpp_Function9, cpp_Function10, effLength);
+        Py_INCREF(Py_None);
+        return Py_None;
+    }      
+    //Custom Dipole Kick with stripping with seperate field components
+    static PyObject* wrap_dipoleGeneralNoKickStripSeperateField(PyObject *self, PyObject *args)
+    {
+        PyObject* pyBunch;
+        PyObject* pyFunction;
+        PyObject* pyFunction2;
+        PyObject* pyFunction3;
+        PyObject* pyFunction4;
+        double effLength;
+
+        if(!PyArg_ParseTuple(	args, "OOOOOd:dipoleGeneralNoKickStripSeperateField",
+                             &pyBunch, &pyFunction, &pyFunction2, &pyFunction3, &pyFunction4, &effLength))
+        {
+            error("teapotbase - dipoleGeneralNoKickStripSeperateField - cannot parse arguments!");
+        }
+        Bunch* cpp_bunch = (Bunch*) ((pyORBIT_Object *) pyBunch)->cpp_obj;
+        OrbitUtils::Function* cpp_Function = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction)->cpp_obj;
+        OrbitUtils::Function* cpp_Function2 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction2)->cpp_obj;    
+        OrbitUtils::Function* cpp_Function3 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction3)->cpp_obj;   
+        OrbitUtils::Function* cpp_Function4 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction4)->cpp_obj;  
+
+        teapot_base::dipoleGeneralNoKickStripSeperateField(cpp_bunch,cpp_Function,cpp_Function2,cpp_Function3,cpp_Function4, effLength);
+        Py_INCREF(Py_None);
+        return Py_None;
+    }       
     static PyMethodDef teapotbaseMethods[] =
     {
 			{"rotatexy",         wrap_rotatexy,       METH_VARARGS, "Rotates bunch around z axis "},
@@ -600,6 +663,8 @@ extern "C"
 			{"dipoleYKick",       wrap_dipoleYKick,          METH_VARARGS, "Custom dipole kick with field in Y direction"},
 			{"dipoleGeneralKickNoStrip",       wrap_dipoleGeneralKickNoStrip,          METH_VARARGS, "Custom dipole kick with no stripping"},
 			{"dipoleGeneralKickStrip",       wrap_dipoleGeneralKickStrip,          METH_VARARGS, "Custom dipole kick with stripping"},
+			{"dipoleGeneralKickStripSeperateField",       wrap_dipoleGeneralKickStripSeperateField,          METH_VARARGS, "Custom dipole kick with stripping with magnetic field components separated"},
+			{"dipoleGeneralNoKickStripSeperateField",       wrap_dipoleGeneralNoKickStripSeperateField,          METH_VARARGS, "Custom dipole kick with No stripping with magnetic field components separated"},
 			{ NULL, NULL }
     };
 

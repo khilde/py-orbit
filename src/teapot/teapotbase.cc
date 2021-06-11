@@ -1710,6 +1710,113 @@ void dipoleGeneralKickNoStrip(Bunch* bunch, OrbitUtils::Function* xpRigidityFunc
 }
 ///////////////////////////////////////////////////////////////////////////
 // NAME
+//   dipoleGeneralNoKickStripSeperateField
+//
+// DESCRIPTION
+//   Custom dipole kick without Stripping
+//
+// PARAMETERS
+//   bunch  = reference to the macro-particle bunch
+//   failedToStripBunch = reference to the macro-particle bunch that fails to get stripped
+//   survivalProbFunction = function that gives the probability a particle survived after travels distance x
+//   inverseFunction = function that is the inverse of the pdf of the particle decay
+//   effLength = the effective Length of the dipole
+//   strength = the strength of the magnetic field in Tesla's
+//   fieldDirection= the direction of the magnetic field in radians. 0 is positive x axis.
+//
+// RETURNS
+//   Nothing
+//
+///////////////////////////////////////////////////////////////////////////
+
+void dipoleGeneralNoKickStripSeperateField(Bunch* bunch, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction, OrbitUtils::Function* ypRigidityFunction, OrbitUtils::Function* yRigidityFunction, double effLength)
+{
+    bool debug=false;
+    bool debug2=false;
+    bool debug3=false;
+    bool debug4=false;
+    bool debug5=false;
+    bool debug6=false;
+    bool debugPrintFile=false;
+    
+    double charge = bunch->getCharge();
+    double rigidity=0;
+    double thetaX;
+    double offsetX;
+    double thetaY;
+    double offsetY;
+    double tempLength;
+
+  
+    SyncPart* syncPart = bunch->getSyncPart();
+    if (charge!=0) {
+    	    rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
+    }
+   
+    
+    double dp_p_coeff = 1.0 / (syncPart->getMomentum() * syncPart->getBeta());
+    double dp_p;
+    if (debug) {
+    	std::cout <<"syncPart->getMomentum()= "<<syncPart->getMomentum()<<std::endl;
+    	std::cout <<"rigidity= "<<rigidity<<std::endl; 
+    	std::cout <<"thetaX= "<<thetaX<<std::endl; 
+    	std::cout <<"charge= "<<charge<<std::endl; 
+    	
+    }
+    //coordinate array [part. index][x,xp,y,yp,z,dE]
+    double** arr = bunch->coordArr();
+    if (debugPrintFile) {
+    	    //erase current file
+    	    ofstream fileOut;
+    	    if (charge==-1) {
+		    fileOut.open("firstChicaneLength.txt");  
+		    fileOut.close();
+		    fileOut.open("firstChicaneL_A_D.txt");  
+		    fileOut.close();
+		    //fileOut.open("firstChicaneDisplacement.txt");  
+		    //fileOut.close();		    
+		    fileOut.open("randomFirst.txt");  
+		    fileOut.close();		    
+	    } else if (charge==0) {
+	    	    fileOut.open("secondChicaneLength.txt");  
+	    	    fileOut.close();   
+	    }
+    }
+
+    for(int i = 0; i < bunch->getSize(); i++)
+    {
+	if (charge!=0) {
+		rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
+		thetaX=xpRigidityFunction->getY(effLength)/rigidity;
+		offsetX=xRigidityFunction->getY(effLength)/rigidity;
+		thetaY=ypRigidityFunction->getY(effLength)/rigidity;
+		offsetY=yRigidityFunction->getY(effLength)/rigidity;		
+		//this should be same as below.
+		//theta=strength*effLength/rigidity;
+		if (debug6) {
+			std::cout <<"thetaX=xpRigidityFunction->getY(effLength)/rigidity= "<<thetaX<<std::endl;
+		}  			        
+		dp_p = arr[i][5] * dp_p_coeff;   
+		//initial offset + drift from inital yp + tracking through magnet 
+		arr[i][2]  = arr[i][2]+arr[i][3]*effLength*1.0 / (1.0 + dp_p)+offsetY/(1.+dp_p);
+		//initial offset + drift from inital xp + tracking through magnet 
+		arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-offsetX/(1+dp_p);
+		
+		arr[i][3]  = arr[i][3]+thetaY/(1+dp_p);
+		arr[i][1]  = arr[i][1]-thetaX/(1+dp_p);    			
+	} else {
+		//its neutral 	
+		dp_p = arr[i][5] * dp_p_coeff;   
+		//initial offset + drift from inital yp
+		arr[i][2]  = arr[i][2]+arr[i][3]*effLength*1.0 / (1.0 + dp_p);
+		//initial offset + drift from inital xp
+		arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p);    			
+	}
+    	
+    }
+}
+///////////////////////////////////////////////////////////////////////////
+// NAME
 //   dipoleGeneralKickStrip
 //
 // DESCRIPTION
@@ -1915,6 +2022,231 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::
 			
 			arr[i][3]  = arr[i][3]+cosFD*theta/(1+dp_p);
 			arr[i][1]  = arr[i][1]-sinFD*theta/(1+dp_p);   
+			
+		
+		} else {
+			std::cout <<"this shouldnt be reached, charge="<<charge<<std::endl;
+			//this shouldnt be reached	
+		}		
+	}
+    	
+    }
+    if (debug4) {
+    	 std::cout <<"countBig= "<<countBig<<std::endl;   
+    }
+    bunch->compress();
+    bunch->setCharge(charge+1);
+}
+///////////////////////////////////////////////////////////////////////////
+// NAME
+//   dipoleGeneralKickStripSeperateField
+//
+// DESCRIPTION
+//   Custom dipole kick with stripping
+//
+// PARAMETERS
+//   bunch  = reference to the macro-particle bunch
+//   failedToStripBunch = reference to the macro-particle bunch that fails to get stripped
+//   CDFFunction = function that gives the probability a particle survived after travels distance x
+//   inverseFunction = function that is the inverse of the pdf of the particle decay
+//   effLength = the effective Length of the dipole
+//
+// RETURNS
+//   Nothing
+//
+///////////////////////////////////////////////////////////////////////////
+
+void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::Function* CDFFunction, OrbitUtils::Function* inverseFunction, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction,OrbitUtils::Function* xp_mRigidityFunction, OrbitUtils::Function* x_mRigidityFunction, OrbitUtils::Function* ypRigidityFunction, OrbitUtils::Function* yRigidityFunction,OrbitUtils::Function* yp_mRigidityFunction, OrbitUtils::Function* y_mRigidityFunction, double effLength)
+{
+    bool debug=false;
+    bool debug2=false;
+    bool debug3=false;
+    bool debug4=false;
+    bool debug5=false;
+    bool debug6=false;
+    bool debugPrintFile=true;
+
+    long idum = (unsigned)time(0);
+    if (debug2) {
+    	    std::cout <<"idum= "<<idum<<std::endl; 
+    	    std::cout <<"time(0)= "<<time(0)<<std::endl; 
+    }
+    idum = -idum;    
+    double random1 = 0;
+    
+    double charge = bunch->getCharge();
+    double rigidity=0;
+    double thetaX;
+    double offsetX;
+    double thetaY;
+    double offsetY;    
+    double tempLength;
+
+  
+    SyncPart* syncPart = bunch->getSyncPart();
+    if (charge!=0) {
+    	    rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
+    }
+   
+    
+    double dp_p_coeff = 1.0 / (syncPart->getMomentum() * syncPart->getBeta());
+    double dp_p;
+    if (debug) {
+    	std::cout <<"syncPart->getMomentum()= "<<syncPart->getMomentum()<<std::endl;
+    	std::cout <<"rigidity= "<<rigidity<<std::endl; 
+    	std::cout <<"thetaX= "<<thetaX<<std::endl; 
+    	std::cout <<"charge= "<<charge<<std::endl; 
+    	
+    }
+    //coordinate array [part. index][x,xp,y,yp,z,dE]
+    double** arr = bunch->coordArr();
+    if (debugPrintFile) {
+    	    //erase current file
+    	    ofstream fileOut;
+    	    if (charge==-1) {
+		    fileOut.open("firstChicaneLength.txt");  
+		    fileOut.close();
+		    fileOut.open("firstChicaneL_A_D.txt");  
+		    fileOut.close();
+		    //fileOut.open("firstChicaneDisplacement.txt");  
+		    //fileOut.close();		    
+		    fileOut.open("randomFirst.txt");  
+		    fileOut.close();		    
+	    } else if (charge==0) {
+	    	    fileOut.open("secondChicaneLength.txt");  
+	    	    fileOut.close();   
+	    }
+    }
+    int countBig=0;
+    int countBig2=0;
+    for(int i = 0; i < bunch->getSize(); i++)
+    {
+    	random1 = Random::ran1(idum);
+    	//first check if it gets stripped
+    	if (random1>CDFFunction->getY(effLength)) {
+    		//it doesnt get stripped
+    		if (charge!=0) {
+    			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
+    			thetaX=xpRigidityFunction->getY(effLength)/rigidity;
+    			offsetX=xRigidityFunction->getY(effLength)/rigidity;
+    			thetaY=ypRigidityFunction->getY(effLength)/rigidity;
+    			offsetY=yRigidityFunction->getY(effLength)/rigidity;    			
+    			//this should be same as below.
+    			//theta=strength*effLength/rigidity;
+		        if (debug6) {
+		        	std::cout <<"thetaX=xpRigidityFunction->getY(effLength)/rigidity= "<<thetaX<<std::endl;
+		        	std::cout <<"this should equal theta below for constant B field"<<std::endl; 
+		        }  			        
+    			dp_p = arr[i][5] * dp_p_coeff;   
+    			//initial offset + drift from inital yp + tracking through magnet 
+   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength*1.0 / (1.0 + dp_p)+offsetY/(1.+dp_p);
+    			//initial offset + drift from inital xp + tracking through magnet 
+   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-offsetX/(1+dp_p);
+   			
+			arr[i][3]  = arr[i][3]+thetaY/(1+dp_p);
+			arr[i][1]  = arr[i][1]-thetaX/(1+dp_p);    			
+    		} else {
+    			//its neutral 	
+    			dp_p = arr[i][5] * dp_p_coeff;   
+    			//initial offset + drift from inital yp
+   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength*1.0 / (1.0 + dp_p);
+    			//initial offset + drift from inital xp
+   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p);    			
+    		}
+		failedToStripBunch->addParticle(arr[i][0], arr[i][1], arr[i][2], arr[i][3], arr[i][4], arr[i][5]);
+		bunch->deleteParticleFast(i);    	
+	} else {
+		//it will be stripped
+		//random1 = Random::ran1(idum);
+		//how far it travels before being stripped
+		tempLength=inverseFunction->getY(random1);
+		if (debug5) {
+			std::cout <<"tempLength= "<<tempLength<<std::endl;
+			std::cout <<"random1= "<<random1<<std::endl;
+		}
+		//std::cout <<"tempLength= "<<tempLength<<std::endl;
+		//if charge is -1
+		if (charge==-1) {
+			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
+			thetaX=xpRigidityFunction->getY(tempLength)/rigidity;
+    			offsetX=xRigidityFunction->getY(tempLength)/rigidity;
+			thetaY=ypRigidityFunction->getY(tempLength)/rigidity;
+    			offsetY=yRigidityFunction->getY(tempLength)/rigidity;    			
+			//theta=strength*tempLength/rigidity;
+			dp_p = arr[i][5] * dp_p_coeff;
+			if (debug4) {
+				if (thetaX/(1+dp_p)<-.001) {
+					countBig++;
+				}
+				//std::cout <<"theta= "<<theta<<std::endl; 
+				//std::cout <<"dp_p= "<<dp_p<<std::endl; 
+				std::cout <<"thetaX Modded= "<<thetaX/(1+dp_p)<<std::endl; 
+			}  
+    			//initial offset + drift from inital yp + tracking through magnet prior to being stripped+ tracking through magnet after being stripped
+   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength/(1.+dp_p)+offsetY/(1+dp_p)+thetaY*(effLength-tempLength)/(1+dp_p);
+    			//initial offset + drift from inital xp + tracking through magnet prior to being stripped+ tracking through magnet after being stripped
+   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-offsetX/(1+dp_p)-thetaX*(effLength-tempLength)/(1+dp_p);
+			
+			arr[i][3]  = arr[i][3]+thetaY/(1+dp_p);
+			arr[i][1]  = arr[i][1]-thetaX/(1+dp_p);   
+			if (debugPrintFile) {
+			    //output tempLength to text file
+			    ofstream fileOut; 
+			    fileOut.open("firstChicaneLength.txt",ios::app);
+			    if (debug3) {
+			    	    std::cout <<"tempLength= "<<tempLength<<std::endl;
+			    }
+			    fileOut<< tempLength<< "\n";
+			    //fileOut<<"hi"<<endl;
+			    fileOut.close();
+
+			    fileOut.open("firstChicaneL_A_D.txt",ios::app);
+			    if (debug3) {
+			    	    std::cout <<"theta= "<<thetaX<<std::endl;
+			    }
+			    fileOut<< tempLength<< ", ";
+			    fileOut<< -thetaX<< ", ";
+			    fileOut<< -(offsetX+thetaX*(effLength-tempLength)) << "\n";
+			    //fileOut<<"hi"<<endl;
+			    fileOut.close();
+					    
+			    
+			    fileOut.open("randomFirst.txt",ios::app);
+			    if (debug3) {
+			    	    std::cout <<"random1= "<<random1<<std::endl;
+			    }
+			    fileOut<< random1<< "\n";
+			    //fileOut<<"hi"<<endl;
+			    fileOut.close();			    
+			}
+			//if charge==0
+		} else if (charge==0) {
+			//its being converted from neutral to charge=+1
+			if (debugPrintFile) {
+			    //output tempLength to text file
+			    ofstream fileOut; 
+			    fileOut.open("secondChicaneLength.txt",ios::app); 
+			    fileOut<< tempLength<< "\n";
+			    fileOut.close();
+			}			
+		
+		
+			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/(charge+1); 
+			thetaX=xp_mRigidityFunction->getY(tempLength)/rigidity;
+    			offsetX=x_mRigidityFunction->getY(tempLength)/rigidity;
+			thetaY=yp_mRigidityFunction->getY(tempLength)/rigidity;
+    			offsetY=y_mRigidityFunction->getY(tempLength)/rigidity;    			
+			//theta=strength*tempLength/rigidity;
+			dp_p = arr[i][5] * dp_p_coeff;
+
+			//no tracking to be done prior to be stripping separate from inital xp.
+    			//initial offset + drift from inital yp + tracking through magnet after being stripped
+   			arr[i][2]  = arr[i][2]+arr[i][3]*effLength/(1.+dp_p)+offsetY/(1+dp_p);
+    			//initial offset + drift from inital xp + tracking through magnet after being stripped
+   			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-offsetX/(1+dp_p);
+			
+			arr[i][3]  = arr[i][3]+thetaY/(1+dp_p);
+			arr[i][1]  = arr[i][1]-thetaX/(1+dp_p);   
 			
 		
 		} else {
