@@ -1717,12 +1717,12 @@ void dipoleGeneralKickNoStrip(Bunch* bunch, OrbitUtils::Function* xpRigidityFunc
 //
 // PARAMETERS
 //   bunch  = reference to the macro-particle bunch
-//   failedToStripBunch = reference to the macro-particle bunch that fails to get stripped
-//   survivalProbFunction = function that gives the probability a particle survived after travels distance x
-//   inverseFunction = function that is the inverse of the pdf of the particle decay
+//   note that if a particle isnt stripped which is the case for this method than tracking is obtained by just evaluated the following functions at the end of the magnet
+//   xpRigidityFunction= the change in xp*Rigidity for a charged particle being stripped as a function of length traveled before being stripped
+//   xRigidityFunction= the change in x*Rigidity for a charged particle being stripped as a function of length traveled before being stripped
+//   ypRigidityFunction= the change in yp*Rigidity for a charged particle being stripped as a function of length traveled before being stripped
+//   yRigidityFunction= the change in y*Rigidity for a charged particle being stripped as a function of length traveled before being stripped
 //   effLength = the effective Length of the dipole
-//   strength = the strength of the magnetic field in Tesla's
-//   fieldDirection= the direction of the magnetic field in radians. 0 is positive x axis.
 //
 // RETURNS
 //   Nothing
@@ -1737,7 +1737,6 @@ void dipoleGeneralNoKickStripSeperateField(Bunch* bunch, OrbitUtils::Function* x
     bool debug4=false;
     bool debug5=false;
     bool debug6=false;
-    bool debugPrintFile=false;
     
     double charge = bunch->getCharge();
     double rigidity=0;
@@ -1765,23 +1764,6 @@ void dipoleGeneralNoKickStripSeperateField(Bunch* bunch, OrbitUtils::Function* x
     }
     //coordinate array [part. index][x,xp,y,yp,z,dE]
     double** arr = bunch->coordArr();
-    if (debugPrintFile) {
-    	    //erase current file
-    	    ofstream fileOut;
-    	    if (charge==-1) {
-		    fileOut.open("firstChicaneLength.txt");  
-		    fileOut.close();
-		    fileOut.open("firstChicaneL_A_D.txt");  
-		    fileOut.close();
-		    //fileOut.open("firstChicaneDisplacement.txt");  
-		    //fileOut.close();		    
-		    fileOut.open("randomFirst.txt");  
-		    fileOut.close();		    
-	    } else if (charge==0) {
-	    	    fileOut.open("secondChicaneLength.txt");  
-	    	    fileOut.close();   
-	    }
-    }
 
     for(int i = 0; i < bunch->getSize(); i++)
     {
@@ -1791,8 +1773,6 @@ void dipoleGeneralNoKickStripSeperateField(Bunch* bunch, OrbitUtils::Function* x
 		offsetX=xRigidityFunction->getY(effLength)/rigidity;
 		thetaY=ypRigidityFunction->getY(effLength)/rigidity;
 		offsetY=yRigidityFunction->getY(effLength)/rigidity;		
-		//this should be same as below.
-		//theta=strength*effLength/rigidity;
 		if (debug6) {
 			std::cout <<"thetaX=xpRigidityFunction->getY(effLength)/rigidity= "<<thetaX<<std::endl;
 		}  			        
@@ -2049,6 +2029,14 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::
 //   failedToStripBunch = reference to the macro-particle bunch that fails to get stripped
 //   CDFFunction = function that gives the probability a particle survived after travels distance x
 //   inverseFunction = function that is the inverse of the pdf of the particle decay
+//   xpRigidityFunction= the change in xp*Rigidity for a charged particle being stripped as a function of length traveled before being stripped
+//   xRigidityFunction= the change in x*Rigidity for a charged particle being stripped as a function of length traveled before being stripped
+//   xp_mRigidityFunction= the change in xp*Rigidity for a neutral particle being stripped as a function of length traveled before being stripped
+//   x_mRigidityFunction= the change in x*Rigidity for a neutral particle being stripped as a function of length traveled before being stripped
+//   ypRigidityFunction= the change in yp*Rigidity for a charged particle being stripped as a function of length traveled before being stripped
+//   yRigidityFunction= the change in y*Rigidity for a charged particle being stripped as a function of length traveled before being stripped
+//   yp_mRigidityFunction= the change in yp*Rigidity for a neutral particle being stripped as a function of length traveled before being stripped
+//   y_mRigidityFunction= the change in y*Rigidity for a neutral particle being stripped as a function of length traveled before being stripped
 //   effLength = the effective Length of the dipole
 //
 // RETURNS
@@ -2065,13 +2053,18 @@ void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch
     bool debug5=false;
     bool debug6=false;
     bool debugPrintFile=true;
+    bool debugFixSeed=false;
+    
 
     long idum = (unsigned)time(0);
     if (debug2) {
     	    std::cout <<"idum= "<<idum<<std::endl; 
     	    std::cout <<"time(0)= "<<time(0)<<std::endl; 
     }
-    idum = -idum;    
+    idum = -idum;   
+    if (debugFixSeed) {
+    	idum=1;
+    }    
     double random1 = 0;
     
     double charge = bunch->getCharge();
@@ -2131,8 +2124,6 @@ void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch
     			offsetX=xRigidityFunction->getY(effLength)/rigidity;
     			thetaY=ypRigidityFunction->getY(effLength)/rigidity;
     			offsetY=yRigidityFunction->getY(effLength)/rigidity;    			
-    			//this should be same as below.
-    			//theta=strength*effLength/rigidity;
 		        if (debug6) {
 		        	std::cout <<"thetaX=xpRigidityFunction->getY(effLength)/rigidity= "<<thetaX<<std::endl;
 		        	std::cout <<"this should equal theta below for constant B field"<<std::endl; 
@@ -2153,7 +2144,9 @@ void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch
     			//initial offset + drift from inital xp
    			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p);    			
     		}
+    		//add macroparticle to failed to strip bunch
 		failedToStripBunch->addParticle(arr[i][0], arr[i][1], arr[i][2], arr[i][3], arr[i][4], arr[i][5]);
+		//remove macroparticle from successfully stripped bunch
 		bunch->deleteParticleFast(i);    	
 	} else {
 		//it will be stripped
@@ -2230,7 +2223,7 @@ void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch
 			    fileOut.close();
 			}			
 		
-		
+			//rigidty before being stripped is zero, need rigidity after being stripped (ie charge+1)
 			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/(charge+1); 
 			thetaX=xp_mRigidityFunction->getY(tempLength)/rigidity;
     			offsetX=x_mRigidityFunction->getY(tempLength)/rigidity;
@@ -2260,6 +2253,7 @@ void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch
     	 std::cout <<"countBig= "<<countBig<<std::endl;   
     }
     bunch->compress();
+    //particles remaining in bunch were successully stripped so change there charge.
     bunch->setCharge(charge+1);
 }
 void dipoleXKick(Bunch* bunch, double effLength, double strength)

@@ -26,45 +26,77 @@ from orbit.teapot.teapot import BaseTEAPOT
 
 from orbit_utils import Function
 
+#computes the tracking functions and stripping probabilities
+from orbit.teapot.function_strippingIncludeChicaneField import probabilityStrippingWithChicane
+
 debugPrint=True
 def printDebug(m1,m2="",m3="",m4="",m5="",m6="",m7="",m8="") :
 	if debugPrint==True:
 		print m1,m2,m3,m4,m5,m6,m7,m8
 		
 class GeneralDipoleStripSeperateField(BaseTEAPOT):
-	def __init__(self, name = "bend no name"):
+	def __init__(self,magneticFieldx,magneticFieldy,nParts,length,gamma,beta, name = "GeneralDipoleStripSeperateField no name"):
 		"""
 		Constructor. Creates the Dipole Combined Functions TEAPOT element .
 		"""
 		BaseTEAPOT.__init__(self,name)
-		self.setType("child dipole teapot")
+		self.setType("parent stripper dipole teapot")
 		
-		#set field direction. (0 is x-axis, pi/2 is y-xaxis)
-		#effective length of dipole
-		self.addParam("effLength",.01)
-		self.addParam("A1",2.47e-6)
-		self.addParam("A2",4.49e9)
+		self.magneticFieldx=magneticFieldx
+		self.magneticFieldy=magneticFieldy
+		self.nParts=nParts
+		self.length=length
+		self.setLength(self.length)
+		self.gamma=gamma
+		self.beta=beta
 		
 		self.functionInverse=None
+		self.functionCDF=None
+		
+		#tracking functions for a charged particle that is stripped to neutral
 		self.functionXPRigidity=None
 		self.functionXRigidity=None
+		self.functionYPRigidity=None
+		self.functionYRigidity=None		
+		
+		#tracking functions for a neutral particle that is stripped to have charge
 		self.functionXP_mRigidity=None
 		self.functionX_mRigidity=None		
-		
-		self.functionYPRigidity=None
-		self.functionYRigidity=None
 		self.functionYP_mRigidity=None
-		self.functionY_mRigidity=None			
+		self.functionY_mRigidity=None	
 		
-	
 		
-	def setEffLength(self,effLength=0.01):
+		self.strippingTracking=None
+		self.computeFunctions()
+		
+	def setFunctionMagneticFieldx(self,function):
+		self.magneticFieldx=function
+	def getFunctionMagneticFieldx(self):
+		return self.magneticFieldx			
+	def setFunctionMagneticFieldy(self,function):
+		self.magneticFieldy=function
+	def getFunctionMagneticFieldy(self):
+		return self.magneticFieldy	
+		
+	def setnParts(self,nParts):
+		self.nParts=nParts
+	def getnParts(self):
+		return self.nParts	
+	def setgamma(self,gamma):
+		self.gamma=gamma
+	def getgamma(self):
+		return self.gamma
+	def setbeta(self,beta):
+		self.beta=beta
+	def getbeta(self):	
+		return self.beta			
+	def setEffLength(self,length=0.01):
 		#sets the effective length of the magnet
-		self.setParam("effLength",effLength)
+		self.length=length
 		
 	def getEffLength(self):
 		#gets the effective length of the magnet
-		return self.getParam("effLength")
+		return self.length
 		
 	def setFunctionCDF(self,function):
 		self.functionCDF=function
@@ -115,7 +147,25 @@ class GeneralDipoleStripSeperateField(BaseTEAPOT):
 	def setFunctionY_mRigidity(self,function):
 		self.functionY_mRigidity=function
 	def getFunctionY_mRigidity(self):
-		return self.functionY_mRigidity			
+		return self.functionY_mRigidity	
+	def computeFunctions(self):
+		self.strippingTracking=probabilityStrippingWithChicane(self.magneticFieldx,self.magneticFieldy,self.nParts,self.length,self.gamma,self.beta)
+		self.strippingTracking.computeFunctions()
+		
+		self.functionCDF=self.strippingTracking.getCDF()
+		
+		self.functionXPRigidity=self.strippingTracking.getdeltaxp_rigidity()
+		self.functionXRigidity=self.strippingTracking.getdeltax_rigidity()
+		self.functionXP_mRigidity=self.strippingTracking.getdeltaxp_m_rigidity()
+		self.functionX_mRigidity=self.strippingTracking.getdeltax_m_rigidity()
+		
+		self.functionYPRigidity=self.strippingTracking.getdeltayp_rigidity()
+		self.functionYRigidity=self.strippingTracking.getdeltay_rigidity()
+		self.functionYP_mRigidity=self.strippingTracking.getdeltayp_m_rigidity()
+		self.functionY_mRigidity=self.strippingTracking.getdeltay_m_rigidity()	
+		
+		self.functionInverse=self.strippingTracking.getInverseFunction()
+		
 	def track(self, paramsDict):
 		"""
 		The Dipole Combined Functions TEAPOT  class implementation of
@@ -126,14 +176,13 @@ class GeneralDipoleStripSeperateField(BaseTEAPOT):
 		bunch = paramsDict["bunch"]
 		firstChicaneFail=paramsDict["firstChicaneFail"]
 		secondChicaneFail=paramsDict["secondChicaneFail"]
+		
 		#charge <0 means first dipole
 		#charge==0 means second dipole
-		TPB.dipoleGeneralKickStripSeperateField(bunch,firstChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity,self.functionYPRigidity,self.functionYRigidity,self.functionYP_mRigidity,self.functionY_mRigidity,length)
-		#if bunch.charge() <0:
-			#print "hi1"
-			#TPB.dipoleGeneralKickStrip(bunch,firstChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity, length, strength,fieldDirection)
-			#print "hi2"
-		#elif bunch.charge()==0:
-			#TPB.dipoleGeneralKickStrip(bunch,secondChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity, length, strength,fieldDirection)
+		#TPB.dipoleGeneralKickStripSeperateField(bunch,firstChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity,self.functionYPRigidity,self.functionYRigidity,self.functionYP_mRigidity,self.functionY_mRigidity,length)
+		if bunch.charge() <0:
+			TPB.dipoleGeneralKickStripSeperateField(bunch,firstChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity,self.functionYPRigidity,self.functionYRigidity,self.functionYP_mRigidity,self.functionY_mRigidity,length)
+		elif bunch.charge()==0:
+			TPB.dipoleGeneralKickStripSeperateField(bunch,secondChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity,self.functionYPRigidity,self.functionYRigidity,self.functionYP_mRigidity,self.functionY_mRigidity,length)
 
 	

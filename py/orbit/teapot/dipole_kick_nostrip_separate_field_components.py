@@ -26,56 +26,74 @@ from orbit.teapot.teapot import BaseTEAPOT
 
 from orbit_utils import Function
 
+#computes the tracking functions and stripping probabilities
+from orbit.teapot.function_strippingIncludeChicaneField import probabilityStrippingWithChicane
+
 debugPrint=True
 def printDebug(m1,m2="",m3="",m4="",m5="",m6="",m7="",m8="") :
 	if debugPrint==True:
 		print m1,m2,m3,m4,m5,m6,m7,m8
 		
 class GeneralDipoleNoStripSeperateField(BaseTEAPOT):
-	def __init__(self, name = "bend no name"):
+	def __init__(self,magneticFieldx,magneticFieldy,nParts,length,gamma,beta, name = "GeneralDipoleNoStripSeperateField no name"):
 		"""
 		Constructor. Creates the Dipole Combined Functions TEAPOT element .
 		"""
-		BaseTEAPOT.__init__(self,name)
-		self.setType("child dipole teapot")
+		BaseTEAPOT.__init__(self, name)
+		self.setType("parent stripper dipole no strip teapot")
 		
-		#set field direction. (0 is x-axis, pi/2 is y-xaxis)
-		#effective length of dipole
-		self.addParam("effLength",.01)
-		self.addParam("A1",2.47e-6)
-		self.addParam("A2",4.49e9)
-		
-		self.functionInverse=None
+		self.magneticFieldx=magneticFieldx
+		self.magneticFieldy=magneticFieldy
+		self.nParts=nParts
+		self.length=length
+		self.setLength(self.length)
+		self.gamma=gamma
+		self.beta=beta
+			
 		self.functionXPRigidity=None
 		self.functionXRigidity=None
-		self.functionXP_mRigidity=None
-		self.functionX_mRigidity=None		
 		
 		self.functionYPRigidity=None
 		self.functionYRigidity=None
-		self.functionYP_mRigidity=None
-		self.functionY_mRigidity=None			
 		
-	
+		self.strippingTracking=None
+		self.computeFunctions()		
 		
-	def setEffLength(self,effLength=0.01):
+	def setFunctionMagneticFieldx(self,function):
+		self.magneticFieldx=function
+	def getFunctionMagneticFieldx(self):
+		return self.magneticFieldx			
+	def setFunctionMagneticFieldy(self,function):
+		self.magneticFieldy=function
+	def getFunctionMagneticFieldy(self):
+		return self.magneticFieldy	
+		
+	def setnParts(self,nParts):
+		self.nParts=nParts
+	def getnParts(self):
+		return self.nParts	
+	def setgamma(self,gamma):
+		self.gamma=gamma
+	def getgamma(self):
+		return self.gamma
+	def setbeta(self,beta):
+		self.beta=beta
+	def getbeta(self):	
+		return self.beta	
+		
+	def setEffLength(self,length=0.01):
 		#sets the effective length of the magnet
-		self.setParam("effLength",effLength)
+		self.length=length
 		
 	def getEffLength(self):
 		#gets the effective length of the magnet
-		return self.getParam("effLength")
+		return self.length
 		
 	def setFunctionCDF(self,function):
 		self.functionCDF=function
 	def getFunctionCDF(self):
 		return self.functionCDF		
 
-	def setFunctionInverse(self,function):
-		self.functionInverse=function
-	def getFunctionInverse(self):
-		return self.functionInverse	
-		
 	def setFunctionXPRigidity(self,function):
 		self.functionXPRigidity=function
 	def getFunctionXPRigidity(self):
@@ -86,17 +104,6 @@ class GeneralDipoleNoStripSeperateField(BaseTEAPOT):
 	def getFunctionXRigidity(self):
 		return self.functionXRigidity	
 		
-	def setFunctionXP_mRigidity(self,function):
-		self.functionXP_mRigidity=function
-	def getFunctionXP_mRigidity(self):
-		return self.functionXP_mRigidity		
-		
-	def setFunctionX_mRigidity(self,function):
-		self.functionX_mRigidity=function
-	def getFunctionX_mRigidity(self):
-		return self.functionX_mRigidity	
-		
-		
 	def setFunctionYPRigidity(self,function):
 		self.functionYPRigidity=function
 	def getFunctionYPRigidity(self):
@@ -106,16 +113,18 @@ class GeneralDipoleNoStripSeperateField(BaseTEAPOT):
 		self.functionYRigidity=function
 	def getFunctionYRigidity(self):
 		return self.functionYRigidity	
+	def computeFunctions(self):
+		self.strippingTracking=probabilityStrippingWithChicane(self.magneticFieldx,self.magneticFieldy,self.nParts,self.length,self.gamma,self.beta)
+		self.strippingTracking.computeFunctions()		
 		
-	def setFunctionYP_mRigidity(self,function):
-		self.functionYP_mRigidity=function
-	def getFunctionYP_mRigidity(self):
-		return self.functionYP_mRigidity		
-		
-	def setFunctionY_mRigidity(self,function):
-		self.functionY_mRigidity=function
-	def getFunctionY_mRigidity(self):
-		return self.functionY_mRigidity			
+		self.functionXPRigidity=self.strippingTracking.getdeltaxp_rigidity()
+		self.functionXRigidity=self.strippingTracking.getdeltax_rigidity()
+
+		self.functionYPRigidity=self.strippingTracking.getdeltayp_rigidity()
+		self.functionYRigidity=self.strippingTracking.getdeltay_rigidity()
+
+		self.functionInverse=self.strippingTracking.getInverseFunction()
+				
 	def track(self, paramsDict):
 		"""
 		The Dipole Combined Functions TEAPOT  class implementation of

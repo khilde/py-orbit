@@ -77,7 +77,7 @@ def addDipoleStripperNode(lattice, position, stripper_node):
 				drift_node_stop_new.setParam("ky",drift_node_stop.getParam("ky")*drift_node_stop_new.getLength()/totalLengthOfKicker)				
 				nodes_new_arr.append(drift_node_stop_new)	
 	elif node_stop_ind-node_start_ind==1:
-		#this currently does work properly because of how chicane field is handled inside stripper dipole
+		#this currently doesnt work properly because of how chicane field is handled inside stripper dipole. So if this is reached kill the simulation
 		print "node_stop_ind-node_start_ind==1"
 		orbitFinalize("node_stop_ind-node_start_ind==1! Stop!")		
 		if isinstance(drift_node_start,DriftTEAPOT) and isinstance(drift_node_stop,KickTEAPOT):
