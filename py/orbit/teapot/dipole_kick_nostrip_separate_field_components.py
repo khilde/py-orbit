@@ -57,8 +57,21 @@ class GeneralDipoleNoStripSeperateField(BaseTEAPOT):
 		self.functionYRigidity=None
 		
 		self.strippingTracking=None
-		self.computeFunctions()		
 		
+		self.chicaneFieldx=0.
+		self.chicaneFieldy=0.	
+		
+		self.computeFunctions()		
+
+
+	def setChicaneFieldx(self,value):
+		self.chicaneFieldx=value
+	def getChicaneFieldx(self):
+		return self.chicaneFieldx
+	def setChicaneFieldy(self,value):
+		self.chicaneFieldy=value
+	def getChicaneFieldy(self):
+		return self.chicaneFieldy		
 	def setFunctionMagneticFieldx(self,function):
 		self.magneticFieldx=function
 	def getFunctionMagneticFieldx(self):
@@ -114,7 +127,7 @@ class GeneralDipoleNoStripSeperateField(BaseTEAPOT):
 	def getFunctionYRigidity(self):
 		return self.functionYRigidity	
 	def computeFunctions(self):
-		self.strippingTracking=probabilityStrippingWithChicane(self.magneticFieldx,self.magneticFieldy,self.nParts,self.length,self.gamma,self.beta)
+		self.strippingTracking=probabilityStrippingWithChicane(self.magneticFieldx,self.magneticFieldy,self.nParts,self.length,self.gamma,self.beta,False)
 		self.strippingTracking.computeFunctions()		
 		
 		self.functionXPRigidity=self.strippingTracking.getdeltaxp_rigidity()
