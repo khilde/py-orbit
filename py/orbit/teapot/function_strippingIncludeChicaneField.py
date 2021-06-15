@@ -38,10 +38,16 @@ class probabilityStrippingWithChicane:
     	    	    return -1
     	    else : 
     	    	    totalMagneticField=math.sqrt(self.magneticFieldx.getY(x)*self.magneticFieldx.getY(x)+self.magneticFieldy.getY(x)*self.magneticFieldy.getY(x))
-    	    	    #print "totalMagneticField= ",totalMagneticField
-    	    	    #print "self.magneticFieldx.getY(x)= ",self.magneticFieldx.getY(x)
-    	    	    #print "self.magneticFieldy.getY(x)= ",self.magneticFieldy.getY(x)
-    	    	    return A1/self.gamma/self.beta/c/totalMagneticField*math.exp(A2/self.gamma/self.beta/c/totalMagneticField)   	    
+    	    	    if A2/self.gamma/self.beta/c/totalMagneticField >200:
+    	    	    	    #tau is HUGE so assume it is infinite 
+    	    	    	    #forumla is tau=A1/C*exp(A2/C), C=gamma*beta*c*B , as B->0 tau->inf, and is dominated by exp(A2/C). 
+    	    	    	    #A2/C>200 implies exp(A2/C)>exp(200) and A1/C>(A1/A2*200) which implies A1/C*exp(A2/C) >A1/A2*200exp(200)=7.95e73 (which is way older than the age of the universe so it should be save to say tau is infinite
+    	    	    	    return -1
+    	    	    else:    	    	   
+			    #print "totalMagneticField= ",totalMagneticField
+			    #print "self.magneticFieldx.getY(x)= ",self.magneticFieldx.getY(x)
+			    #print "self.magneticFieldy.getY(x)= ",self.magneticFieldy.getY(x)
+			    return A1/self.gamma/self.beta/c/totalMagneticField*math.exp(A2/self.gamma/self.beta/c/totalMagneticField)   	    
     def computeFunctions(self):
     	    c=299792458  
     	    stepSize=self.maxXValue/self.n
@@ -71,66 +77,68 @@ class probabilityStrippingWithChicane:
     	    self.InverseFunction=Function()
    	    #normalizeValue=1-self.probabilityOfSurvival(self.maxXValue)
    	    #print "normalizeValue= %d" %normalizeValue
+   	    canBeStripped=False
     	    for i in range(self.n):
     	    	    x = stepSize*i
-    	    	    y=-1000
+    	    	    y=1
     	    	    if self.computeStripping:
     	    	    	    y = self.tau(x)
-    	    	    else:
-    	    	    	    y=1
-    	    	    if y<0:
-    	    	    	    #do nothing because tau is infinite
-    	    	    	    pass
-    	    	    else:
-    	    	    	    theSum=theSum+stepSize/self.gamma/self.beta/c/y
-    	    	    	    temp_theSumDeltaxp=theSumDeltaxp
-    	    	    	    theSumDeltaxp=theSumDeltaxp+self.magneticFieldy.getY(x)*stepSize 
-    	    	    	    theSumDeltax=theSumDeltax+(theSumDeltaxp+temp_theSumDeltaxp)/2.*stepSize
-    	    	    	    
-			    self.deltaxp_rigidity.add(x,theSumDeltaxp)
-			    self.deltax_rigidity.add(x,theSumDeltax)
-    	    	    	    
-    	    		    theSumDeltaxp_m=0
-    	                    theSumDeltax_m=0
-    	                    if self.computeStripping:
-				    for j in range(i,self.n):
-					    x_m = stepSize*j
-					    temp_theSumDeltaxp_m=theSumDeltaxp_m
-					    theSumDeltaxp_m=theSumDeltaxp_m+self.magneticFieldy.getY(x_m)*stepSize
-					    theSumDeltax_m=theSumDeltax_m+(theSumDeltaxp_m+temp_theSumDeltaxp_m)/2.*stepSize
-				    self.deltaxp_m_rigidity.add(x,theSumDeltaxp_m)
-				    self.deltax_m_rigidity.add(x,theSumDeltax_m)
-			    
-    	    	    	    temp_theSumDeltayp=theSumDeltayp
-    	    	    	    theSumDeltayp=theSumDeltayp+self.magneticFieldx.getY(x)*stepSize
-    	    	    	    theSumDeltay=theSumDeltay+(theSumDeltayp+temp_theSumDeltayp)/2.*stepSize
-    	    	    	    
-			    self.deltayp_rigidity.add(x,theSumDeltayp)
-			    self.deltay_rigidity.add(x,theSumDeltay)
-    	    	    	    
-    	    		    theSumDeltayp_m=0
-    	                    theSumDeltay_m=0  
-    	                    if self.computeStripping:
-				    for j in range(i,self.n):
-					    y_m = stepSize*j
-					    temp_theSumDeltayp_m=theSumDeltayp_m
-					    theSumDeltayp_m=theSumDeltayp_m+self.magneticFieldx.getY(y_m)*stepSize
-					    theSumDeltay_m=theSumDeltay_m+(theSumDeltayp_m+temp_theSumDeltayp_m)/2.*stepSize
-				    self.deltayp_m_rigidity.add(x,theSumDeltayp_m)
-				    self.deltay_m_rigidity.add(x,theSumDeltay_m)
-			    if self.computeStripping:
-			    	    self.accumlatedSum.add(x,theSum)
-				    #3e-7 gives 1-exp(-15)=exp(-3e-7)
-				    if theSum<15 and theSum>3e-7: 
-					    self.CDF.add(x,(1-math.exp(-theSum)))
-	    					    
-    	    wasSuccess=False
-	    if self.computeStripping:
-	    	    wasSuccess=self.CDF.setInverse(self.InverseFunction)
-		    if wasSuccess is 1:
-			    print "successfully Inverted"
-		    else:
-			    print "failed to Invert"
+    	    	    #if tau is not infinite
+		    if y>0 and self.computeStripping:
+		    	    theSum=theSum+stepSize/self.gamma/self.beta/c/y
+		    temp_theSumDeltaxp=theSumDeltaxp
+		    theSumDeltaxp=theSumDeltaxp+self.magneticFieldy.getY(x)*stepSize 
+		    theSumDeltax=theSumDeltax+(theSumDeltaxp+temp_theSumDeltaxp)/2.*stepSize
+		    
+		    self.deltaxp_rigidity.add(x,theSumDeltaxp)
+		    self.deltax_rigidity.add(x,theSumDeltax)
+		    
+		    theSumDeltaxp_m=0
+		    theSumDeltax_m=0
+		    if self.computeStripping:
+			    for j in range(i,self.n):
+				    x_m = stepSize*j
+				    temp_theSumDeltaxp_m=theSumDeltaxp_m
+				    theSumDeltaxp_m=theSumDeltaxp_m+self.magneticFieldy.getY(x_m)*stepSize
+				    theSumDeltax_m=theSumDeltax_m+(theSumDeltaxp_m+temp_theSumDeltaxp_m)/2.*stepSize
+			    self.deltaxp_m_rigidity.add(x,theSumDeltaxp_m)
+			    self.deltax_m_rigidity.add(x,theSumDeltax_m)
+		    
+		    temp_theSumDeltayp=theSumDeltayp
+		    theSumDeltayp=theSumDeltayp+self.magneticFieldx.getY(x)*stepSize
+		    theSumDeltay=theSumDeltay+(theSumDeltayp+temp_theSumDeltayp)/2.*stepSize
+		    
+		    self.deltayp_rigidity.add(x,theSumDeltayp)
+		    self.deltay_rigidity.add(x,theSumDeltay)
+		    
+		    theSumDeltayp_m=0
+		    theSumDeltay_m=0  
+		    if self.computeStripping:
+			    for j in range(i,self.n):
+				    y_m = stepSize*j
+				    temp_theSumDeltayp_m=theSumDeltayp_m
+				    theSumDeltayp_m=theSumDeltayp_m+self.magneticFieldx.getY(y_m)*stepSize
+				    theSumDeltay_m=theSumDeltay_m+(theSumDeltayp_m+temp_theSumDeltayp_m)/2.*stepSize
+			    self.deltayp_m_rigidity.add(x,theSumDeltayp_m)
+			    self.deltay_m_rigidity.add(x,theSumDeltay_m)
+		    if self.computeStripping and y>0:
+		    	    #y<0 means sum hasnt change and inverting with fail
+			    self.accumlatedSum.add(x,theSum)
+			    #3e-7 gives 1-exp(-15)=exp(-3e-7)
+			    if theSum<15 and theSum>3e-7: 
+			    	    canBeStripped=True
+				    self.CDF.add(x,(1-math.exp(-theSum)))
+	    if canBeStripped:			    
+		    wasSuccess=False
+		    if self.computeStripping:
+			    wasSuccess=self.CDF.setInverse(self.InverseFunction)
+			    if wasSuccess is 1:
+				    print "successfully Inverted"
+			    else:
+				    print "failed to Invert"
+	    else:
+	    	    #it cant be stripped so set CDF at end to something bigger than 10 so later when check to see if a particle is stripped it will fail (0<=random1<1 will never be bigger than 10)
+	    	    self.CDF.add(self.maxXValue,10)				    
     def getaccumlatedSum(self):
     	    return self.accumlatedSum
     def getCDF(self):
