@@ -35,7 +35,7 @@ def printDebug(m1,m2="",m3="",m4="",m5="",m6="",m7="",m8="") :
 		print m1,m2,m3,m4,m5,m6,m7,m8
 		
 class GeneralDipoleStripSeperateField(BaseTEAPOT):
-	def __init__(self,magneticFieldx,magneticFieldy,nParts,length,gamma,beta, name = "GeneralDipoleStripSeperateField no name"):
+	def __init__(self,magneticFieldx,magneticFieldy,nParts,length,gamma,beta, name = "GeneralDipoleStripSeperateField no name",stripLength=-1):
 		"""
 		Constructor. Creates the Dipole Combined Functions TEAPOT element .
 		"""
@@ -49,6 +49,7 @@ class GeneralDipoleStripSeperateField(BaseTEAPOT):
 		self.setLength(self.length)
 		self.gamma=gamma
 		self.beta=beta
+		self.stripLength=stripLength
 		
 		self.functionInverse=None
 		self.functionCDF=None
@@ -181,8 +182,8 @@ class GeneralDipoleStripSeperateField(BaseTEAPOT):
 		#charge==0 means second dipole
 		#TPB.dipoleGeneralKickStripSeperateField(bunch,firstChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity,self.functionYPRigidity,self.functionYRigidity,self.functionYP_mRigidity,self.functionY_mRigidity,length)
 		if bunch.charge() <0:
-			TPB.dipoleGeneralKickStripSeperateField(bunch,firstChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity,self.functionYPRigidity,self.functionYRigidity,self.functionYP_mRigidity,self.functionY_mRigidity,length)
+			TPB.dipoleGeneralKickStripSeperateField(bunch,firstChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity,self.functionYPRigidity,self.functionYRigidity,self.functionYP_mRigidity,self.functionY_mRigidity,length,self.stripLength)
 		elif bunch.charge()==0:
-			TPB.dipoleGeneralKickStripSeperateField(bunch,secondChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity,self.functionYPRigidity,self.functionYRigidity,self.functionYP_mRigidity,self.functionY_mRigidity,length)
+			TPB.dipoleGeneralKickStripSeperateField(bunch,secondChicaneFail,self.functionCDF,self.functionInverse,self.functionXPRigidity,self.functionXRigidity,self.functionXP_mRigidity,self.functionX_mRigidity,self.functionYPRigidity,self.functionYRigidity,self.functionYP_mRigidity,self.functionY_mRigidity,length,self.stripLength)
 
 	

@@ -585,9 +585,10 @@ extern "C"
         PyObject* pyFunction9;
         PyObject* pyFunction10;
         double effLength;
-
-        if(!PyArg_ParseTuple(	args, "OOOOOOOOOOOOd:dipoleGeneralKickStripSeperateField",
-                             &pyBunch, &pyBunch2, &pyFunction, &pyFunction2, &pyFunction3, &pyFunction4, &pyFunction5, &pyFunction6, &pyFunction7, &pyFunction8, &pyFunction9, &pyFunction10, &effLength))
+        double stripLength;
+        
+        if(!PyArg_ParseTuple(	args, "OOOOOOOOOOOOdd:dipoleGeneralKickStripSeperateField",
+                             &pyBunch, &pyBunch2, &pyFunction, &pyFunction2, &pyFunction3, &pyFunction4, &pyFunction5, &pyFunction6, &pyFunction7, &pyFunction8, &pyFunction9, &pyFunction10, &effLength, &stripLength))
         {
             error("teapotbase - dipoleGeneralKickStripSeperateField - cannot parse arguments!");
         }
@@ -603,7 +604,7 @@ extern "C"
         OrbitUtils::Function* cpp_Function8 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction8)->cpp_obj;
         OrbitUtils::Function* cpp_Function9 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction9)->cpp_obj;
         OrbitUtils::Function* cpp_Function10 = (OrbitUtils::Function*) ((pyORBIT_Object *) pyFunction10)->cpp_obj;
-        teapot_base::dipoleGeneralKickStripSeperateField(cpp_bunch,cpp_bunch2,cpp_Function,cpp_Function2,cpp_Function3,cpp_Function4,cpp_Function5,cpp_Function6, cpp_Function7, cpp_Function8, cpp_Function9, cpp_Function10, effLength);
+        teapot_base::dipoleGeneralKickStripSeperateField(cpp_bunch,cpp_bunch2,cpp_Function,cpp_Function2,cpp_Function3,cpp_Function4,cpp_Function5,cpp_Function6, cpp_Function7, cpp_Function8, cpp_Function9, cpp_Function10, effLength, stripLength);
         Py_INCREF(Py_None);
         return Py_None;
     }      

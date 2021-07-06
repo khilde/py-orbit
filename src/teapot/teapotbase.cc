@@ -241,25 +241,34 @@ void wrapbunch(Bunch* bunch, double length)
 
 void kick(Bunch* bunch, double kx, double ky, double kE, int useCharge)
 {
+    double KNL, dp_p;
     double charge = +1.0;
     if(useCharge == 1) charge = bunch->getCharge();
     double kxc = kx * charge;
     double kyc = ky * charge;
     double kEc = kE * charge;
+    
+    SyncPart* syncPart = bunch->getSyncPart();
+    double dp_p_coeff = 1.0 / (syncPart->getMomentum() * syncPart->getBeta());
+    
     //coordinate array [part. index][x,xp,y,yp,z,dE]
     double** arr = bunch->coordArr();
     if(kxc != 0.)
-    {
+    {	    
         for(int i = 0; i < bunch->getSize(); i++)
         {
-            arr[i][1] += kxc;
+	    dp_p = arr[i][5] * dp_p_coeff;
+	    KNL  = 1.0 / (1.0 + dp_p);            	
+            arr[i][1] += KNL*kxc;
         }
     }
     if(kyc != 0.)
     {
         for(int i = 0; i < bunch->getSize(); i++)
         {
-            arr[i][3] += kyc;
+	    dp_p = arr[i][5] * dp_p_coeff;
+	    KNL  = 1.0 / (1.0 + dp_p);            	
+            arr[i][3] += KNL*kyc;
         }
     }
     if(kEc != 0.)
@@ -2038,13 +2047,14 @@ void dipoleGeneralKickStrip(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::
 //   yp_mRigidityFunction= the change in yp*Rigidity for a neutral particle being stripped as a function of length traveled before being stripped
 //   y_mRigidityFunction= the change in y*Rigidity for a neutral particle being stripped as a function of length traveled before being stripped
 //   effLength = the effective Length of the dipole
+//   stripLength = the length particle travels in dipole before being stripped. If set to less than 0 then this means it generates a value for each particle according to lifetime function. If >0 then it is the same value for each particle equal to stripLength
 //
 // RETURNS
 //   Nothing
 //
 ///////////////////////////////////////////////////////////////////////////
 
-void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::Function* CDFFunction, OrbitUtils::Function* inverseFunction, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction,OrbitUtils::Function* xp_mRigidityFunction, OrbitUtils::Function* x_mRigidityFunction, OrbitUtils::Function* ypRigidityFunction, OrbitUtils::Function* yRigidityFunction,OrbitUtils::Function* yp_mRigidityFunction, OrbitUtils::Function* y_mRigidityFunction, double effLength)
+void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch,OrbitUtils::Function* CDFFunction, OrbitUtils::Function* inverseFunction, OrbitUtils::Function* xpRigidityFunction, OrbitUtils::Function* xRigidityFunction,OrbitUtils::Function* xp_mRigidityFunction, OrbitUtils::Function* x_mRigidityFunction, OrbitUtils::Function* ypRigidityFunction, OrbitUtils::Function* yRigidityFunction,OrbitUtils::Function* yp_mRigidityFunction, OrbitUtils::Function* y_mRigidityFunction, double effLength, double stripLength=-1)
 {
     bool debug=false;
     bool debug2=false;
@@ -2116,7 +2126,7 @@ void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch
     {
     	random1 = Random::ran1(idum);
     	//first check if it gets stripped
-    	if (random1>CDFFunction->getY(effLength)) {
+    	if (random1>CDFFunction->getY(effLength) &&stripLength<0) {
     		//it doesnt get stripped
     		if (charge!=0) {
     			rigidity= syncPart->getMomentum()/(OrbitConst::c/pow(10.,9))/charge;
@@ -2153,6 +2163,12 @@ void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch
 		//random1 = Random::ran1(idum);
 		//how far it travels before being stripped
 		tempLength=inverseFunction->getY(random1);
+		if (stripLength>0) {
+			if (stripLength>effLength){
+				std::cout <<"stripLength= "<<stripLength<<" < effLength= "<<effLength<<std::endl;
+			}
+			tempLength=stripLength;
+		}
 		if (debug5) {
 			std::cout <<"tempLength= "<<tempLength<<std::endl;
 			std::cout <<"random1= "<<random1<<std::endl;
