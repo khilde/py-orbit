@@ -1791,8 +1791,11 @@ void dipoleGeneralNoKickStripSeperateField(Bunch* bunch, OrbitUtils::Function* x
 		//initial offset + drift from inital xp + tracking through magnet 
 		arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-offsetX/(1+dp_p);
 		
-		arr[i][3]  = arr[i][3]+thetaY/(1+dp_p);
-		arr[i][1]  = arr[i][1]-thetaX/(1+dp_p);    			
+		arr[i][3]  = arr[i][3]+thetaY;
+		arr[i][1]  = arr[i][1]-thetaX;
+		
+		//arr[i][3]  = arr[i][3]+thetaY/(1+dp_p);
+		//arr[i][1]  = arr[i][1]-thetaX/(1+dp_p);		
 	} else {
 		//its neutral 	
 		dp_p = arr[i][5] * dp_p_coeff;   
@@ -2144,8 +2147,11 @@ void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch
     			//initial offset + drift from inital xp + tracking through magnet 
    			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-offsetX/(1+dp_p);
    			
-			arr[i][3]  = arr[i][3]+thetaY/(1+dp_p);
-			arr[i][1]  = arr[i][1]-thetaX/(1+dp_p);    			
+			arr[i][3]  = arr[i][3]+thetaY;
+			arr[i][1]  = arr[i][1]-thetaX;    
+   			
+			//arr[i][3]  = arr[i][3]+thetaY/(1+dp_p);
+			//arr[i][1]  = arr[i][1]-thetaX/(1+dp_p);    			
     		} else {
     			//its neutral 	
     			dp_p = arr[i][5] * dp_p_coeff;   
@@ -2195,9 +2201,12 @@ void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch
    			arr[i][2]  = arr[i][2]+arr[i][3]*effLength/(1.+dp_p)+offsetY/(1+dp_p)+thetaY*(effLength-tempLength)/(1+dp_p);
     			//initial offset + drift from inital xp + tracking through magnet prior to being stripped+ tracking through magnet after being stripped
    			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-offsetX/(1+dp_p)-thetaX*(effLength-tempLength)/(1+dp_p);
+
+			arr[i][3]  = arr[i][3]+thetaY;
+			arr[i][1]  = arr[i][1]-thetaX; 
 			
-			arr[i][3]  = arr[i][3]+thetaY/(1+dp_p);
-			arr[i][1]  = arr[i][1]-thetaX/(1+dp_p);   
+			//arr[i][3]  = arr[i][3]+thetaY/(1+dp_p);
+			//arr[i][1]  = arr[i][1]-thetaX/(1+dp_p);   
 			if (debugPrintFile) {
 			    //output tempLength to text file
 			    ofstream fileOut; 
@@ -2253,9 +2262,12 @@ void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch
    			arr[i][2]  = arr[i][2]+arr[i][3]*effLength/(1.+dp_p)+offsetY/(1+dp_p);
     			//initial offset + drift from inital xp + tracking through magnet after being stripped
    			arr[i][0]  = arr[i][0]+arr[i][1]*effLength/(1.+dp_p)-offsetX/(1+dp_p);
+
+			arr[i][3]  = arr[i][3]+thetaY;
+			arr[i][1]  = arr[i][1]-thetaX;   
 			
-			arr[i][3]  = arr[i][3]+thetaY/(1+dp_p);
-			arr[i][1]  = arr[i][1]-thetaX/(1+dp_p);   
+			//arr[i][3]  = arr[i][3]+thetaY/(1+dp_p);
+			//arr[i][1]  = arr[i][1]-thetaX/(1+dp_p);   
 			
 		
 		} else {
