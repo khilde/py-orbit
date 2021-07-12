@@ -256,19 +256,15 @@ void kick(Bunch* bunch, double kx, double ky, double kE, int useCharge)
     if(kxc != 0.)
     {	    
         for(int i = 0; i < bunch->getSize(); i++)
-        {
-	    dp_p = arr[i][5] * dp_p_coeff;
-	    KNL  = 1.0 / (1.0 + dp_p);            	
-            arr[i][1] += KNL*kxc;
+        {        	
+            arr[i][1] += kxc;
         }
     }
     if(kyc != 0.)
     {
         for(int i = 0; i < bunch->getSize(); i++)
-        {
-	    dp_p = arr[i][5] * dp_p_coeff;
-	    KNL  = 1.0 / (1.0 + dp_p);            	
-            arr[i][3] += KNL*kyc;
+        {        	
+            arr[i][3] += kyc;
         }
     }
     if(kEc != 0.)
