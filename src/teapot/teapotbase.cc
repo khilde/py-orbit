@@ -2102,14 +2102,18 @@ void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch
     }
     //coordinate array [part. index][x,xp,y,yp,z,dE]
     double** arr = bunch->coordArr();
+    
+    string timeForFileName =to_string(time(0));
     if (debugPrintFile) {
     	    //erase current file
     	    ofstream fileOut;
     	    if (charge==-1) {
 		    fileOut.open("firstChicaneLength.txt");  
 		    fileOut.close();
-		    fileOut.open("firstChicaneL_A_D.txt");  
+		    fileOut.open("KickerPrintNode/firstChicaneL_A_D_"+timeForFileName+".txt");  
 		    fileOut.close();
+		    fileOut.open("KickerPrintNode/firstChicaneL_A_D_Y_"+timeForFileName+".txt");  
+		    fileOut.close();		    
 		    //fileOut.open("firstChicaneDisplacement.txt");  
 		    //fileOut.close();		    
 		    fileOut.open("randomFirst.txt");  
@@ -2214,7 +2218,7 @@ void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch
 			    //fileOut<<"hi"<<endl;
 			    fileOut.close();
 
-			    fileOut.open("firstChicaneL_A_D.txt",ios::app);
+			    fileOut.open("KickerPrintNode/firstChicaneL_A_D_"+timeForFileName+".txt",ios::app);
 			    if (debug3) {
 			    	    std::cout <<"theta= "<<thetaX<<std::endl;
 			    }
@@ -2224,6 +2228,15 @@ void dipoleGeneralKickStripSeperateField(Bunch* bunch, Bunch* failedToStripBunch
 			    //fileOut<<"hi"<<endl;
 			    fileOut.close();
 					    
+			    fileOut.open("KickerPrintNode/firstChicaneL_A_D_Y_"+timeForFileName+".txt",ios::app);
+			    if (debug3) {
+			    	    std::cout <<"thetaY= "<<thetaY<<std::endl;
+			    }
+			    fileOut<< tempLength<< ", ";
+			    fileOut<< thetaY<< ", ";
+			    fileOut<< (offsetY+thetaY*(effLength-tempLength)) << "\n";
+			    //fileOut<<"hi"<<endl;
+			    fileOut.close();
 			    
 			    fileOut.open("randomFirst.txt",ios::app);
 			    if (debug3) {
