@@ -27,7 +27,7 @@ def addDipoleStripperNode(lattice, position, stripper_node):
 	for node in lattice.getNodes():
 		if(position_start >= z and position_start <= z + node.getLength()):
 			node_start_ind = ind
-		if(position_stop >= z and position_stop <= z + node.getLength()):
+		if(position_stop > z and position_stop <= z + node.getLength()):
 			node_stop_ind = ind
 		ind += 1
 		z += node.getLength()
